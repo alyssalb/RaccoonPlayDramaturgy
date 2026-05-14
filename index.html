@@ -482,51 +482,36 @@
       line-height: 1.85;
     }
 
-    /* Pipeline stage strip — typographic, horizontal */
-    .pipeline-strip {
-      display: flex;
-      align-items: flex-start;
-      margin: 2rem 0 3rem;
-      overflow-x: auto;
-      padding-bottom: 0.5rem;
-    }
+    /* ============================================================
+       PIPELINE MODEL — cycle diagram + stage descriptions
+       ============================================================ */
 
-    .pipeline-step {
+    .cycle-diagram-wrap {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      flex: 1;
-      min-width: 80px;
-      position: relative;
-      text-align: center;
-    }
-
-    /* Connecting line between steps */
-    .pipeline-step:not(:last-child)::after {
-      content: '';
-      position: absolute;
-      top: 11px; left: 50%;
-      width: 100%; height: 1px;
-      background: var(--fog);
-    }
-
-    .step-dot {
-      width: 22px; height: 22px;
-      border-radius: 50%;
-      border: 2px solid var(--fog);
-      background: var(--linen);
-      display: flex;
-      align-items: center;
       justify-content: center;
-      font-family: var(--font-display);
-      font-size: 0.75rem;
-      color: var(--lichen);
-      position: relative;
-      z-index: 1;
-      margin-bottom: 0.5rem;
+      margin: 1.5rem 0 2.5rem;
     }
 
-    .step-name { font-size: 0.68rem; color: var(--lichen); line-height: 1.3; }
+    /* SVG diagram scales fluidly, capped at 320px */
+    .cycle-diagram { width: 100%; max-width: 320px; height: auto; }
+
+    /* Stage description blocks */
+    .pipeline-stage-descriptions { display: flex; flex-direction: column; gap: 0; }
+
+    .stage-desc {
+      padding: 1.5rem 0 1.5rem 1.25rem;
+      border-left: 2px solid var(--soil);
+      margin-bottom: 1.5rem;
+    }
+
+    .stage-desc-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem; }
+
+    /* Colored dot matching the node color in the diagram */
+    .stage-swatch { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    .stage-desc h4 { font-family: var(--font-display); font-size: 1.2rem; font-style: italic; color: var(--soil); }
+
+    .stage-desc p { font-size: 0.95rem; line-height: 1.8; color: #3a2e20; max-width: 580px; }
 
     /* Character accordion — separated by thin rules, no card border */
     .character-entry { border-top: 1px solid var(--fog); }
@@ -942,24 +927,140 @@
         then trust your own instincts. Fill this out digitally or print it.
       </p>
 
-      <!-- Pipeline stage legend
-           EDIT: Replace [Stage N] text with your actual stage names.
-           ADD / REMOVE: duplicate or delete a .pipeline-step div. -->
-      <div>
-        <div class="section-tag" style="margin-bottom:1rem;">The Pipeline — Stage Reference</div>
-        <div class="pipeline-strip">
-          <div class="pipeline-step"><div class="step-dot">1</div><div class="step-name">[Stage 1]</div></div>
-          <div class="pipeline-step"><div class="step-dot">2</div><div class="step-name">[Stage 2]</div></div>
-          <div class="pipeline-step"><div class="step-dot">3</div><div class="step-name">[Stage 3]</div></div>
-          <div class="pipeline-step"><div class="step-dot">4</div><div class="step-name">[Stage 4]</div></div>
-          <div class="pipeline-step"><div class="step-dot">5</div><div class="step-name">[Stage 5]</div></div>
+      <!-- ============================================================
+           PIPELINE MODEL — Normalization / Acclimation / Dehumanization
+           This is a cycle diagram, not a linear strip, because the
+           model describes a back-and-forth recursive process.
+           The CSS below draws three labeled arcs in a triangle shape.
+           ============================================================ -->
+      <div class="pipeline-model">
+        <div class="section-tag" style="margin-bottom:1.25rem;">The Pipeline — How It Works</div>
+
+        <!-- SVG cycle diagram: three stages in a looping triangle -->
+        <!-- The arrows suggest movement in both directions — this is intentional. -->
+        <div class="cycle-diagram-wrap">
+          <svg class="cycle-diagram" viewBox="0 0 320 280" xmlns="http://www.w3.org/2000/svg" aria-label="Radicalization cycle: Normalization, Acclimation, Dehumanization">
+
+            <!-- ---- connecting arc lines ---- -->
+            <!-- N → A -->
+            <path d="M 100 68 Q 160 30 220 68" fill="none" stroke="#c8beae" stroke-width="1.5" marker-end="url(#arr)"/>
+            <!-- A → D -->
+            <path d="M 248 105 Q 270 165 230 210" fill="none" stroke="#c8beae" stroke-width="1.5" marker-end="url(#arr)"/>
+            <!-- D → N -->
+            <path d="M 100 215 Q 50 165 80 105" fill="none" stroke="#c8beae" stroke-width="1.5" marker-end="url(#arr)"/>
+            <!-- reverse arrows (lighter) to show back-and-forth -->
+            <path d="M 210 78 Q 160 42 110 78" fill="none" stroke="#c8beae" stroke-width="0.8" stroke-dasharray="4 3" marker-end="url(#arr-light)"/>
+            <path d="M 224 200 Q 262 155 244 112" fill="none" stroke="#c8beae" stroke-width="0.8" stroke-dasharray="4 3" marker-end="url(#arr-light)"/>
+            <path d="M 88 112 Q 58 158 95 202" fill="none" stroke="#c8beae" stroke-width="0.8" stroke-dasharray="4 3" marker-end="url(#arr-light)"/>
+
+            <!-- arrowhead markers -->
+            <defs>
+              <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="#8a9e7a"/>
+              </marker>
+              <marker id="arr-light" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="#c8beae"/>
+              </marker>
+            </defs>
+
+            <!-- ---- stage nodes ---- -->
+            <!-- Normalization — top left -->
+            <circle cx="88" cy="88" r="48" fill="#2e2318" stroke="#f2ece0" stroke-width="2"/>
+            <text x="88" y="82" text-anchor="middle" fill="#f2ece0" font-family="'Lora', serif" font-size="11" font-style="italic">Normali-</text>
+            <text x="88" y="97" text-anchor="middle" fill="#f2ece0" font-family="'Lora', serif" font-size="11" font-style="italic">zation</text>
+
+            <!-- Acclimation — top right -->
+            <circle cx="232" cy="88" r="48" fill="#4a6741" stroke="#f2ece0" stroke-width="2"/>
+            <text x="232" y="82" text-anchor="middle" fill="#f2ece0" font-family="'Lora', serif" font-size="11" font-style="italic">Acclim-</text>
+            <text x="232" y="97" text-anchor="middle" fill="#f2ece0" font-family="'Lora', serif" font-size="11" font-style="italic">ation</text>
+
+            <!-- Dehumanization — bottom center -->
+            <circle cx="160" cy="210" r="48" fill="#9e6a47" stroke="#f2ece0" stroke-width="2"/>
+            <text x="160" y="204" text-anchor="middle" fill="#f2ece0" font-family="'Lora', serif" font-size="10" font-style="italic">Dehuman-</text>
+            <text x="160" y="219" text-anchor="middle" fill="#f2ece0" font-family="'Lora', serif" font-size="10" font-style="italic">ization</text>
+
+            <!-- center label -->
+            <text x="160" y="147" text-anchor="middle" fill="#8a9e7a" font-family="'Lora', serif" font-size="8.5" letter-spacing="0.08em">back &amp; forth</text>
+          </svg>
         </div>
-        <div class="placeholder">
-          <span class="ph-label">✦ Stage Descriptions</span>
-          Add a brief description of what each pipeline stage represents,
-          so actors can orient themselves before working on their character.
-        </div>
-      </div>
+
+        <!-- Stage descriptions — the real content of the model -->
+        <!-- PLACEHOLDER: Each description is ready for you to expand with your own framing. -->
+        <div class="pipeline-stage-descriptions">
+
+          <div class="stage-desc">
+            <div class="stage-desc-header">
+              <span class="stage-swatch" style="background:var(--soil);"></span>
+              <h4>Normalization</h4>
+            </div>
+            <p>
+              The process by which extreme ideas, rhetoric, or behaviors are made to seem
+              ordinary, expected, or even inevitable. Exposure to a fringe idea is repeated
+              until it no longer registers as alarming — it becomes the wallpaper.
+            </p>
+            <div class="placeholder" style="margin-top:0.75rem;">
+              <span class="ph-label">✦ Your framing</span>
+              Add your specific notes on how normalization functions in this play —
+              which ideas get normalized, through what mechanisms, by whom, and for whom.
+            </div>
+          </div>
+
+          <div class="stage-desc">
+            <div class="stage-desc-header">
+              <span class="stage-swatch" style="background:var(--moss);"></span>
+              <h4>Acclimation</h4>
+            </div>
+            <p>
+              Where normalization is passive exposure, acclimation is active adjustment.
+              A character begins to orient themselves around the normalized idea — their
+              relationships, identity, and sense of self start to reorganize in response.
+              They are not yet committed, but they are becoming comfortable.
+            </p>
+            <div class="placeholder" style="margin-top:0.75rem;">
+              <span class="ph-label">✦ Your framing</span>
+              Add your notes on acclimation in this play — what does it look like when
+              a character starts to settle into a worldview? What do they gain? What do they give up?
+            </div>
+          </div>
+
+          <div class="stage-desc">
+            <div class="stage-desc-header">
+              <span class="stage-swatch" style="background:var(--clay);"></span>
+              <h4>Dehumanization</h4>
+            </div>
+            <p>
+              The endpoint — and the fuel for the next cycle. Once a character has
+              dehumanized a target (or themselves), that act makes the next round
+              of normalization easier. Dehumanization is not a finish line; it loops
+              back, deepening the process for everyone caught inside it.
+            </p>
+            <div class="placeholder" style="margin-top:0.75rem;">
+              <span class="ph-label">✦ Your framing</span>
+              Add your notes on how dehumanization manifests in this play — in language,
+              in action, in the characters' relationships to each other and to themselves.
+            </div>
+          </div>
+
+          <div class="stage-desc" style="border-left-color: var(--fog);">
+            <div class="stage-desc-header">
+              <span class="stage-swatch" style="background:var(--fog);"></span>
+              <h4>The Loop</h4>
+            </div>
+            <p>
+              These three stages are not a straight line. They feed each other — each
+              cycle of normalization makes acclimation faster, each round of acclimation
+              makes dehumanization feel more justified, and each act of dehumanization
+              becomes the new baseline to normalize. The pipeline is recursive.
+            </p>
+            <div class="placeholder" style="margin-top:0.75rem;">
+              <span class="ph-label">✦ Your framing</span>
+              How does the recursive quality of this pipeline show up in the structure
+              of the play itself? In its dramaturgy, its comedy, its politics?
+            </div>
+          </div>
+
+        </div><!-- end .pipeline-stage-descriptions -->
+      </div><!-- end .pipeline-model -->
 
       <!-- CHARACTER ENTRIES
            Each .character-entry is one character accordion.
@@ -993,9 +1094,10 @@
           <div class="worksheet">
             <div><label class="field-label">Where do you think your character entered the pipeline?</label><input class="fill-line" type="text" placeholder="Your answer..." /></div>
             <div><label class="field-label">What was your character's core grievance or unmet need?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <div><label class="field-label">What stage of the pipeline are they at by the start of the play?</label><input class="fill-line" type="text" placeholder="Stage number and name..." /></div>
-            <div><label class="field-label">Who or what was the most influential force in their radicalization?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <div><label class="field-label">Is there anything that could pull them back? What would it take?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Where in the cycle are they at the start of the play — normalization, acclimation, or dehumanization?</label><input class="fill-line" type="text" placeholder="e.g. deep in acclimation, beginning to dehumanize..." /></div>
+            <div><label class="field-label">Who or what was the most influential force in pulling them through the cycle?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Is there a moment in the play where they cycle back — where something they've normalized becomes strange again? Where?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Is there anything that could interrupt the cycle for them? What would it take?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
             <!-- ADD MORE QUESTIONS: duplicate a <div> block above -->
           </div>
         </div>
@@ -1015,11 +1117,12 @@
             [Your notes on this character's pipeline journey.]
           </div>
           <div class="worksheet">
-            <div><label class="field-label">Where do you think your character entered the pipeline?</label><input class="fill-line" type="text" placeholder="Your answer..." /></div>
+            <div><label class="field-label">Where do you think your character entered the cycle?</label><input class="fill-line" type="text" placeholder="Your answer..." /></div>
             <div><label class="field-label">What was your character's core grievance or unmet need?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <div><label class="field-label">What stage of the pipeline are they at by the start of the play?</label><input class="fill-line" type="text" placeholder="Stage number and name..." /></div>
-            <div><label class="field-label">Who or what was the most influential force in their radicalization?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <div><label class="field-label">Is there anything that could pull them back? What would it take?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Where in the cycle are they at the start of the play — normalization, acclimation, or dehumanization?</label><input class="fill-line" type="text" placeholder="e.g. deep in acclimation, beginning to dehumanize..." /></div>
+            <div><label class="field-label">Who or what was the most influential force in pulling them through the cycle?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Is there a moment in the play where they cycle back — where something they've normalized becomes strange again? Where?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Is there anything that could interrupt the cycle for them? What would it take?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
           </div>
         </div>
       </div>
@@ -1038,11 +1141,12 @@
             [Your notes on this character's pipeline journey.]
           </div>
           <div class="worksheet">
-            <div><label class="field-label">Where do you think your character entered the pipeline?</label><input class="fill-line" type="text" placeholder="Your answer..." /></div>
+            <div><label class="field-label">Where do you think your character entered the cycle?</label><input class="fill-line" type="text" placeholder="Your answer..." /></div>
             <div><label class="field-label">What was your character's core grievance or unmet need?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <div><label class="field-label">What stage of the pipeline are they at by the start of the play?</label><input class="fill-line" type="text" placeholder="Stage number and name..." /></div>
-            <div><label class="field-label">Who or what was the most influential force in their radicalization?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <div><label class="field-label">Is there anything that could pull them back? What would it take?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Where in the cycle are they at the start of the play — normalization, acclimation, or dehumanization?</label><input class="fill-line" type="text" placeholder="e.g. deep in acclimation, beginning to dehumanize..." /></div>
+            <div><label class="field-label">Who or what was the most influential force in pulling them through the cycle?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Is there a moment in the play where they cycle back — where something they've normalized becomes strange again? Where?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Is there anything that could interrupt the cycle for them? What would it take?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
           </div>
         </div>
       </div>
