@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raccoon Play — Dramaturgy Packet</title>
+
+  <!-- ============================================================
+       FONTS
+       Cormorant Garamond: old-paper editorial serif for headings.
+       Lora: warm, readable serif for body — feels like a well-loved
+       anthology or field notebook.
+       ============================================================ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+
+  <!-- D3.js — used to render the interactive network graph -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+
+  <style>
+    /* ============================================================
+       DESIGN TOKENS — naturalistic palette
+       Edit these to retheme the whole site at once.
+       linen    = warm page background
+       parchment= slightly deeper warm white (graph bg)
+       soil     = near-black text and nav
+       clay     = terracotta accent / highlight
+       moss     = forest green for anchor nodes
+       lichen   = muted sage for secondary text
+       fog      = mid-tone rule lines
+       paper    = panel background
+       ============================================================ */
+    :root {
+      --linen:     #f2ece0;
+      --parchment: #ede4d0;
+      --soil:      #2e2318;
+      --clay:      #9e6a47;
+      --moss:      #4a6741;
+      --lichen:    #8a9e7a;
+      --fog:       #c8beae;
+      --paper:     #f8f4ec;
+
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body:    'Lora', Georgia, serif;
+      --transition:   0.2s ease;
+    }
+
+    /* ============================================================
+       RESET & BASE
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--linen);
+      color: var(--soil);
+      font-size: 17px;
+      line-height: 1.8;
+    }
+
+    /* Subtle paper-grain texture across the whole page */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ============================================================
+       NAVIGATION — slender fixed left sidebar
+       ============================================================ */
+    nav {
+      position: fixed;
+      top: 0; left: 0;
+      width: 200px;
+      height: 100vh;
+      background: var(--soil);
+      display: flex;
+      flex-direction: column;
+      padding: 2.5rem 1.5rem 2rem;
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 1.05rem;
+      color: var(--linen);
+      line-height: 1.35;
+      margin-bottom: 2.5rem;
+      opacity: 0.9;
+    }
+
+    .nav-raccoon { display: block; font-style: normal; font-size: 1.3rem; margin-bottom: 0.3rem; opacity: 0.6; }
+
+    nav ul { list-style: none; }
+    nav ul li { margin-bottom: 0.05rem; }
+
+    nav ul li a {
+      display: block;
+      color: rgba(242,236,224,0.5);
+      text-decoration: none;
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      padding: 0.38rem 0.5rem;
+      border-radius: 2px;
+      transition: color var(--transition);
+      line-height: 1.4;
+    }
+
+    /* Hover / active: brighten text + thin left rule — no boxy highlight */
+    nav ul li a:hover { color: rgba(242,236,224,0.85); }
+    nav ul li a.active { color: var(--linen); border-left: 2px solid var(--clay); padding-left: 0.75rem; }
+
+    /* ============================================================
+       MAIN — offset by sidebar width
+       ============================================================ */
+    main { margin-left: 200px; position: relative; z-index: 1; }
+
+    /* ============================================================
+       HERO — full-bleed dark header, typography-led
+       ============================================================ */
+    .site-hero {
+      background: var(--soil);
+      color: var(--linen);
+      padding: 6rem 5rem 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Ghost raccoon — purely decorative */
+    .site-hero::after {
+      content: '🦝';
+      position: absolute;
+      right: 4rem; bottom: -1rem;
+      font-size: 12rem;
+      opacity: 0.06;
+      pointer-events: none;
+      filter: grayscale(1);
+    }
+
+    .hero-rule { width: 48px; height: 1px; background: var(--clay); margin-bottom: 1.5rem; }
+
+    .hero-kicker {
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--clay);
+      margin-bottom: 0.75rem;
+    }
+
+    .site-hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      font-weight: 600;
+      font-style: italic;
+      line-height: 1.05;
+      margin-bottom: 1.5rem;
+      color: var(--linen);
+    }
+
+    .hero-tagline {
+      font-family: var(--font-body);
+      font-size: 1rem;
+      color: rgba(242,236,224,0.6);
+      max-width: 460px;
+      line-height: 1.7;
+      font-style: italic;
+    }
+
+    /* ============================================================
+       SECTION — shared editorial layout
+       ============================================================ */
+    .section {
+      padding: 5rem 5rem 4.5rem;
+      max-width: 860px;
+      border-bottom: 1px solid var(--fog);
+    }
+
+    .section:last-child { border-bottom: none; }
+
+    /* Eyebrow above each heading: number · rule · tag */
+    .section-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .section-num { font-family: var(--font-display); font-size: 0.85rem; color: var(--clay); font-style: italic; }
+    .section-rule { flex: 1; max-width: 32px; height: 1px; background: var(--fog); }
+    .section-tag { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--lichen); }
+
+    .section h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 600;
+      line-height: 1.15;
+      margin-bottom: 1.75rem;
+      color: var(--soil);
+    }
+
+    .prose { font-size: 1rem; line-height: 1.85; color: #3a2e20; max-width: 640px; }
+    .prose + .prose { margin-top: 1.25rem; }
+
+    /* ============================================================
+       PLACEHOLDER — editorial style, not a card.
+       Italic left-rule text, no filled background.
+       ============================================================ */
+    .placeholder {
+      font-style: italic;
+      color: var(--lichen);
+      font-size: 0.9rem;
+      padding-left: 1.25rem;
+      border-left: 2px solid var(--fog);
+      margin: 1.25rem 0;
+      line-height: 1.7;
+    }
+
+    .placeholder .ph-label {
+      display: block;
+      font-style: normal;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--clay);
+      margin-bottom: 0.35rem;
+    }
+
+    /* ============================================================
+       SECTION 2: AT A GLANCE — horizontal definition list
+       ============================================================ */
+    .glance-row {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+      border-top: 1px solid var(--fog);
+    }
+
+    .glance-item {
+      padding: 1.1rem 2rem 1.1rem 0;
+      margin-right: 2rem;
+      border-bottom: 1px solid var(--fog);
+      min-width: 130px;
+    }
+
+    .glance-item dt { font-size: 0.65rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--lichen); margin-bottom: 0.3rem; }
+    .glance-item dd { font-family: var(--font-display); font-size: 1.15rem; color: var(--soil); }
+
+    /* ============================================================
+       SECTION 3: BIG QUESTIONS — numbered prose lines, no cards
+       ============================================================ */
+    .questions-list { list-style: none; margin-top: 1rem; }
+
+    .questions-list li {
+      display: grid;
+      grid-template-columns: 2rem 1fr;
+      gap: 0.5rem;
+      padding: 1.1rem 0;
+      border-bottom: 1px solid var(--fog);
+      font-size: 1rem;
+      line-height: 1.6;
+      align-items: baseline;
+    }
+
+    .questions-list li:first-child { border-top: 1px solid var(--fog); }
+
+    .q-index { font-family: var(--font-display); font-style: italic; color: var(--clay); font-size: 1.1rem; }
+
+    /* ============================================================
+       SECTION 4: NETWORK GRAPH
+       ============================================================ */
+    #network-graph-container {
+      width: 100%;
+      height: 520px;
+      background: var(--parchment);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+      cursor: grab;
+      margin-top: 1.5rem;
+      box-shadow: inset 0 0 40px rgba(46,35,24,0.06);
+    }
+
+    #network-graph-container:active { cursor: grabbing; }
+
+    .graph-hint {
+      position: absolute;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.72rem;
+      color: var(--lichen);
+      pointer-events: none;
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+      font-style: italic;
+    }
+
+    /* ============================================================
+       NODE DETAIL PANEL — slides in from right
+       ============================================================ */
+    #node-panel {
+      position: fixed;
+      top: 0; right: -500px;
+      width: 440px;
+      max-width: 94vw;
+      height: 100vh;
+      background: var(--paper);
+      box-shadow: -2px 0 40px rgba(46,35,24,0.15);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+
+    #node-panel.open { right: 0; }
+
+    .panel-top {
+      background: var(--soil);
+      color: var(--linen);
+      padding: 1.75rem 1.75rem 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .panel-top-meta { display: flex; justify-content: space-between; align-items: flex-start; }
+
+    .panel-type-tag {
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--clay);
+      margin-bottom: 0.6rem;
+    }
+
+    #panel-title {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-style: italic;
+      font-weight: 600;
+      line-height: 1.15;
+      color: var(--linen);
+    }
+
+    .panel-close {
+      background: none;
+      border: none;
+      color: rgba(242,236,224,0.5);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0.2rem;
+      line-height: 1;
+      transition: color var(--transition);
+      flex-shrink: 0;
+    }
+
+    .panel-close:hover { color: var(--linen); }
+
+    .panel-body { flex: 1; overflow-y: auto; padding: 2rem 1.75rem; }
+
+    .panel-heading {
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--lichen);
+      margin-bottom: 0.75rem;
+      margin-top: 2rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--fog);
+    }
+
+    .panel-heading:first-child { margin-top: 0; }
+
+    .panel-blurb { font-size: 0.93rem; line-height: 1.8; color: #3a2e20; font-style: italic; }
+
+    /* Quotes — open, no box */
+    .panel-quote {
+      margin: 1rem 0;
+      padding-left: 1.25rem;
+      border-left: 2px solid var(--lichen);
+    }
+
+    .panel-quote p { font-family: var(--font-display); font-size: 1.1rem; font-style: italic; line-height: 1.5; color: var(--soil); }
+    .panel-quote .attr { display: block; font-size: 0.75rem; color: var(--lichen); margin-top: 0.4rem; letter-spacing: 0.04em; }
+
+    /* Resources — inline text links */
+    .panel-resource-link {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--fog);
+      text-decoration: none;
+      color: var(--soil);
+      font-size: 0.88rem;
+      transition: color var(--transition);
+    }
+
+    .panel-resource-link:last-child { border-bottom: none; }
+    .panel-resource-link:hover { color: var(--clay); }
+
+    .resource-type-tag { font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--lichen); flex-shrink: 0; }
+
+    /* ============================================================
+       SECTION 5: RACCOON CULTURE — flowing sub-topics
+       ============================================================ */
+    .raccoon-topic { margin-bottom: 2.5rem; }
+
+    .raccoon-topic h4 {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-style: italic;
+      color: var(--soil);
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--fog);
+    }
+
+    /* ============================================================
+       SECTION 6: REFERENCES — editorial text list, no cards
+       ============================================================ */
+    .reference-entry {
+      display: grid;
+      grid-template-columns: 60px 1fr;
+      gap: 0 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--fog);
+      align-items: baseline;
+    }
+
+    .reference-entry:first-of-type { border-top: 1px solid var(--fog); }
+
+    .ref-type-tag { font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--lichen); padding-top: 0.2rem; }
+    .ref-title { font-family: var(--font-display); font-style: italic; font-size: 1.05rem; color: var(--soil); line-height: 1.3; }
+    .ref-meta { font-size: 0.82rem; color: var(--lichen); margin-top: 0.2rem; }
+
+    /* ============================================================
+       SECTION 7: VISUAL LIBRARY
+       ============================================================ */
+    .visual-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+
+    .visual-slot {
+      aspect-ratio: 4/3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      border: 1px dashed var(--fog);
+      border-radius: 2px;
+      color: var(--lichen);
+      font-size: 0.78rem;
+      text-align: center;
+      padding: 1rem;
+      font-style: italic;
+      transition: border-color var(--transition);
+      cursor: pointer;
+    }
+
+    .visual-slot:hover { border-color: var(--clay); color: var(--clay); }
+    .visual-slot .slot-icon { font-size: 1.5rem; opacity: 0.5; }
+
+    /* ============================================================
+       SECTION 8: CHARACTER PIPELINE WORKSHEET
+       ============================================================ */
+    .activity-intro {
+      font-style: italic;
+      font-size: 0.97rem;
+      color: #4a3e2c;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--moss);
+      margin-bottom: 3rem;
+      max-width: 580px;
+      line-height: 1.85;
+    }
+
+    /* Pipeline stage strip — typographic, horizontal */
+    .pipeline-strip {
+      display: flex;
+      align-items: flex-start;
+      margin: 2rem 0 3rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+
+    .pipeline-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      min-width: 80px;
+      position: relative;
+      text-align: center;
+    }
+
+    /* Connecting line between steps */
+    .pipeline-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 11px; left: 50%;
+      width: 100%; height: 1px;
+      background: var(--fog);
+    }
+
+    .step-dot {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--fog);
+      background: var(--linen);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      color: var(--lichen);
+      position: relative;
+      z-index: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .step-name { font-size: 0.68rem; color: var(--lichen); line-height: 1.3; }
+
+    /* Character accordion — separated by thin rules, no card border */
+    .character-entry { border-top: 1px solid var(--fog); }
+    .character-entry:last-child { border-bottom: 1px solid var(--fog); }
+
+    .character-toggle {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 1.5rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      cursor: pointer;
+      text-align: left;
+      gap: 1rem;
+    }
+
+    .char-name-display { font-family: var(--font-display); font-size: 1.4rem; font-style: italic; color: var(--soil); line-height: 1.1; }
+    .char-role-display { font-size: 0.78rem; color: var(--lichen); letter-spacing: 0.04em; margin-top: 0.15rem; }
+    .toggle-chevron { font-size: 0.75rem; color: var(--lichen); transition: transform 0.2s; flex-shrink: 0; }
+    .character-entry.open .toggle-chevron { transform: rotate(180deg); }
+
+    .character-body { display: none; padding-bottom: 2.5rem; }
+    .character-entry.open .character-body { display: block; }
+
+    /* Dramaturg's note — prose note, not a box */
+    .dramaturg-note-inline {
+      font-style: italic;
+      font-size: 0.9rem;
+      color: var(--lichen);
+      padding-left: 1.25rem;
+      border-left: 2px solid var(--moss);
+      margin-bottom: 2rem;
+      line-height: 1.8;
+    }
+
+    .dramaturg-note-inline strong {
+      display: block;
+      font-style: normal;
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--moss);
+      margin-bottom: 0.4rem;
+    }
+
+    /* Worksheet fields — open underline style */
+    .worksheet { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    .field-label { display: block; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--lichen); margin-bottom: 0.5rem; }
+
+    .fill-line {
+      display: block; width: 100%;
+      border: none; border-bottom: 1px solid var(--fog);
+      background: transparent;
+      padding: 0.3rem 0 0.4rem;
+      font-family: var(--font-body); font-size: 0.95rem; color: var(--soil);
+      outline: none;
+      transition: border-color var(--transition);
+    }
+
+    .fill-line:focus { border-color: var(--clay); }
+
+    .fill-area {
+      display: block; width: 100%;
+      border: none; border-bottom: 1px solid var(--fog);
+      background: transparent;
+      padding: 0.3rem 0 0.4rem;
+      font-family: var(--font-body); font-size: 0.95rem; color: var(--soil);
+      outline: none; min-height: 64px; resize: none;
+      transition: border-color var(--transition);
+    }
+
+    .fill-area:focus { border-color: var(--clay); }
+
+    /* Print button — subtle text link */
+    .print-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--lichen);
+      background: none; border: none;
+      cursor: pointer; padding: 0;
+      margin-bottom: 2.5rem;
+      transition: color var(--transition);
+      font-family: var(--font-body);
+    }
+
+    .print-link:hover { color: var(--clay); }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 720px) {
+      nav { position: relative; width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; padding: 1rem; }
+      nav ul { flex-direction: row; flex-wrap: wrap; gap: 0.25rem; }
+      nav ul li a.active { border-left: none; border-bottom: 2px solid var(--clay); padding-left: 0.5rem; }
+      main { margin-left: 0; }
+      .section { padding: 3rem 1.5rem; }
+      .site-hero { padding: 3rem 1.5rem; }
+      #node-panel { width: 100%; right: -100%; }
+    }
+
+    @media print {
+      nav, #node-panel, .print-link, .graph-hint, #network-graph-container { display: none !important; }
+      main { margin-left: 0; }
+      .section { padding: 1.5rem; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       SIDEBAR NAVIGATION
+       To add a new section: copy a <li> and update href + label.
+       ============================================================ -->
+  <nav aria-label="Sections">
+    <div class="nav-logo">
+      <span class="nav-raccoon">🦝</span>
+      Raccoon Play<br>Dramaturgy Packet
+    </div>
+    <ul>
+      <li><a href="#how-to-use">How to Use</a></li>
+      <li><a href="#introduction">Introduction</a></li>
+      <li><a href="#big-questions">Big Questions</a></li>
+      <li><a href="#networked-topics">Networked Topics</a></li>
+      <li><a href="#raccoon-culture">Raccoon Culture</a></li>
+      <li><a href="#reference-docs">Further Reading</a></li>
+      <li><a href="#visual-library">Visual Library</a></li>
+      <li><a href="#character-pipeline">Character Pipeline</a></li>
+      <!--
+        ADD NEW SECTION LINK:
+        <li><a href="#your-section-id">Section Title</a></li>
+      -->
+    </ul>
+  </nav>
+
+  <main>
+
+    <!-- HERO ===================================================== -->
+    <header class="site-hero">
+      <div class="hero-rule"></div>
+      <div class="hero-kicker">Dramaturgy Packet</div>
+      <h1>Raccoon Play</h1><!-- PLACEHOLDER: Update title if needed -->
+      <p class="hero-tagline">
+        <!-- PLACEHOLDER: Add tagline or brief description of the production -->
+        [Tagline or brief production description goes here.]
+      </p>
+    </header>
+
+    <!-- ============================================================
+         01 / HOW TO USE THIS PACKET
+         ============================================================ -->
+    <section class="section" id="how-to-use">
+      <div class="section-eyebrow">
+        <span class="section-num">01</span>
+        <span class="section-rule"></span>
+        <span class="section-tag">How to Use This Packet</span>
+      </div>
+      <h2>Dramaturg's Note</h2>
+
+      <div class="placeholder">
+        <span class="ph-label">✦ Dramaturg's Note</span>
+        Write your note to the company here. Explain how the packet is organized,
+        how you'd like collaborators to engage with it, and any framing you want to offer
+        before they dive in. This is your voice in the room before you're in the room.
+      </div>
+
+      <div class="placeholder">
+        <span class="ph-label">✦ How to Navigate This Site</span>
+        Describe the structure: the sidebar, the interactive network graph,
+        the clickable nodes, and the character pipeline worksheet.
+      </div>
+    </section>
+
+    <!-- ============================================================
+         02 / INTRODUCTION / RESEARCH STARTER / AT A GLANCE
+         ============================================================ -->
+    <section class="section" id="introduction">
+      <div class="section-eyebrow">
+        <span class="section-num">02</span>
+        <span class="section-rule"></span>
+        <span class="section-tag">Research Starter</span>
+      </div>
+      <h2>Introduction &amp; At a Glance</h2>
+
+      <div class="placeholder">
+        <span class="ph-label">✦ Research Introduction</span>
+        Write a framing paragraph introducing the world of the play and the research
+        areas you've explored. What should a company member understand before starting?
+      </div>
+
+      <!-- At-a-glance quick facts — edit the <dd> values below -->
+      <dl class="glance-row">
+        <div class="glance-item"><dt>Playwright</dt><dd>[Name]</dd></div>
+        <div class="glance-item"><dt>Setting</dt><dd>[Place / Time]</dd></div>
+        <div class="glance-item"><dt>Genre</dt><dd>Political Satire</dd></div>
+        <div class="glance-item"><dt>Runtime</dt><dd>[approx.]</dd></div>
+        <div class="glance-item"><dt>World Premiere</dt><dd>[Year / Venue]</dd></div>
+        <div class="glance-item"><dt>Characters</dt><dd>[Number]</dd></div>
+        <!-- ADD MORE: duplicate a .glance-item div -->
+      </dl>
+    </section>
+
+    <!-- ============================================================
+         03 / BIG QUESTIONS AND THEMES
+         ============================================================ -->
+    <section class="section" id="big-questions">
+      <div class="section-eyebrow">
+        <span class="section-num">03</span>
+        <span class="section-rule"></span>
+        <span class="section-tag">Themes</span>
+      </div>
+      <h2>Big Questions and Themes</h2>
+
+      <div class="placeholder">
+        <span class="ph-label">✦ Framing Note</span>
+        Add a sentence or two introducing why these questions matter to this production.
+      </div>
+
+      <!-- EDIT: Replace each <li> text with your real questions.
+           Add or remove <li> items as needed.
+           Update roman numerals to match. -->
+      <ul class="questions-list">
+        <li><span class="q-index">i.</span><span>[Big Question #1 — replace with your question]</span></li>
+        <li><span class="q-index">ii.</span><span>[Big Question #2 — replace with your question]</span></li>
+        <li><span class="q-index">iii.</span><span>[Big Question #3 — replace with your question]</span></li>
+        <li><span class="q-index">iv.</span><span>[Big Question #4 — replace with your question]</span></li>
+        <li><span class="q-index">v.</span><span>[Big Question #5 — add more items as needed]</span></li>
+      </ul>
+    </section>
+
+    <!-- ============================================================
+         04 / NETWORKED TOPICS — INTERACTIVE GRAPH
+         The graph is built by D3.js. To add content to nodes,
+         edit the `nodes` array in the <script> section below.
+         Each node has: blurb, quotes[], resources[].
+         ============================================================ -->
+    <section class="section" id="networked-topics">
+      <div class="section-eyebrow">
+        <span class="section-num">04</span>
+        <span class="section-rule"></span>
+        <span class="section-tag">Research Map</span>
+      </div>
+      <h2>Networked Topics in This Play</h2>
+
+      <p class="prose">
+        Click any node to read our research notes, pulled quotes, and further resources.
+        Drag nodes to rearrange the map. Scroll to zoom.
+        Darker nodes are the primary conceptual anchors.
+      </p>
+
+      <!-- D3 renders the SVG graph inside this container -->
+      <div id="network-graph-container">
+        <div class="graph-hint">click a node to open &middot; drag to rearrange &middot; scroll to zoom</div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         05 / RACCOON CULTURE
+         ============================================================ -->
+    <section class="section" id="raccoon-culture">
+      <div class="section-eyebrow">
+        <span class="section-num">05</span>
+        <span class="section-rule"></span>
+        <span class="section-tag">World of the Play</span>
+      </div>
+      <h2>Raccoon Culture</h2>
+
+      <div class="placeholder">
+        <span class="ph-label">✦ Framing Note</span>
+        Write your introduction to this section. Why raccoons? What cultural meanings,
+        symbolic histories, or representations feel relevant to this production?
+      </div>
+
+      <!-- EDIT: Each .raccoon-topic is a sub-topic.
+           Replace [Sub-topic N] and placeholder text with real content.
+           ADD MORE: duplicate a .raccoon-topic div. -->
+      <div class="raccoon-topic">
+        <h4>🦝 [Sub-topic 1]</h4>
+        <div class="placeholder">
+          <span class="ph-label">✦ Placeholder</span>
+          Your notes on this aspect of raccoon culture, symbolism, or natural history.
+        </div>
+      </div>
+
+      <div class="raccoon-topic">
+        <h4>🦝 [Sub-topic 2]</h4>
+        <div class="placeholder">
+          <span class="ph-label">✦ Placeholder</span>
+          Your notes on this aspect of raccoon culture, symbolism, or natural history.
+        </div>
+      </div>
+
+      <div class="raccoon-topic">
+        <h4>🦝 [Sub-topic 3]</h4>
+        <div class="placeholder">
+          <span class="ph-label">✦ Placeholder</span>
+          Your notes on this aspect of raccoon culture, symbolism, or natural history.
+        </div>
+      </div>
+      <!-- ADD MORE: duplicate a .raccoon-topic div above -->
+    </section>
+
+    <!-- ============================================================
+         06 / REFERENCE DOCUMENTS / FURTHER READING
+         ============================================================ -->
+    <section class="section" id="reference-docs">
+      <div class="section-eyebrow">
+        <span class="section-num">06</span>
+        <span class="section-rule"></span>
+        <span class="section-tag">Bibliography</span>
+      </div>
+      <h2>Reference Documents &amp; Further Reading</h2>
+
+      <div class="placeholder">
+        <span class="ph-label">✦ Curatorial Note</span>
+        Add a brief note about how you've organized these references,
+        or what you'd most recommend a company member start with.
+      </div>
+
+      <!-- EDIT: Each .reference-entry is one item.
+           Change .ref-type-tag text to: Book, Article, Video, Podcast, Website, etc.
+           Wrap .ref-title in an <a href="..."> tag to add a hyperlink.
+           ADD MORE: duplicate a .reference-entry div. -->
+      <div class="reference-entry">
+        <span class="ref-type-tag">Book</span>
+        <div>
+          <div class="ref-title">[Title]</div>
+          <div class="ref-meta">[Author] &middot; [Brief note on relevance]</div>
+        </div>
+      </div>
+
+      <div class="reference-entry">
+        <span class="ref-type-tag">Article</span>
+        <div>
+          <div class="ref-title">[Title]</div>
+          <div class="ref-meta">[Publication / Author] &middot; [Brief note on relevance]</div>
+        </div>
+      </div>
+
+      <div class="reference-entry">
+        <span class="ref-type-tag">Video</span>
+        <div>
+          <div class="ref-title">[Title]</div>
+          <div class="ref-meta">[Creator / Platform] &middot; [Brief note on relevance]</div>
+        </div>
+      </div>
+
+      <div class="reference-entry">
+        <span class="ref-type-tag">Podcast</span>
+        <div>
+          <div class="ref-title">[Episode / Show]</div>
+          <div class="ref-meta">[Host] &middot; [Brief note on relevance]</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         07 / VISUAL LIBRARY
+         ============================================================ -->
+    <section class="section" id="visual-library">
+      <div class="section-eyebrow">
+        <span class="section-num">07</span>
+        <span class="section-rule"></span>
+        <span class="section-tag">Images &amp; Media</span>
+      </div>
+      <h2>Visual Library</h2>
+
+      <div class="placeholder">
+        <span class="ph-label">✦ Curatorial Note</span>
+        Write a brief note about the images you've gathered and why.
+        What was your eye drawn to, and what do you want the company to feel or notice?
+      </div>
+
+      <!-- EDIT: Replace .visual-slot divs with real <img> tags or iframes.
+           Example: <img src="images/filename.jpg" alt="description" style="width:100%;border-radius:2px;" />
+           You can also embed a Google Slides deck via <iframe> here.
+           ADD MORE: duplicate a .visual-slot div. -->
+      <div class="visual-grid">
+        <div class="visual-slot"><span class="slot-icon">🖼</span>Image 1<br>replace with &lt;img&gt;</div>
+        <div class="visual-slot"><span class="slot-icon">🖼</span>Image 2<br>replace with &lt;img&gt;</div>
+        <div class="visual-slot"><span class="slot-icon">🖼</span>Image 3<br>replace with &lt;img&gt;</div>
+        <div class="visual-slot"><span class="slot-icon">🖼</span>Image 4<br>replace with &lt;img&gt;</div>
+        <div class="visual-slot"><span class="slot-icon">🖼</span>Image 5<br>replace with &lt;img&gt;</div>
+        <div class="visual-slot"><span class="slot-icon">＋</span>Add more images</div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         08 / CHARACTER PIPELINE ACTIVITY
+         ============================================================ -->
+    <section class="section" id="character-pipeline">
+      <div class="section-eyebrow">
+        <span class="section-num">08</span>
+        <span class="section-rule"></span>
+        <span class="section-tag">Actor Worksheet</span>
+      </div>
+      <h2>Character Pipeline Activity</h2>
+
+      <button class="print-link" onclick="window.print()">↓ Print this worksheet</button>
+
+      <!-- PLACEHOLDER: Edit the activity instructions below -->
+      <p class="activity-intro">
+        This activity invites you to trace how your character may have moved through
+        the pipeline of radicalization — the gradual steps, exposures, relationships,
+        and grievances that shaped who they are at the top of the play.
+        There are no right answers. Use the dramaturg's suggestion as a starting point,
+        then trust your own instincts. Fill this out digitally or print it.
+      </p>
+
+      <!-- Pipeline stage legend
+           EDIT: Replace [Stage N] text with your actual stage names.
+           ADD / REMOVE: duplicate or delete a .pipeline-step div. -->
+      <div>
+        <div class="section-tag" style="margin-bottom:1rem;">The Pipeline — Stage Reference</div>
+        <div class="pipeline-strip">
+          <div class="pipeline-step"><div class="step-dot">1</div><div class="step-name">[Stage 1]</div></div>
+          <div class="pipeline-step"><div class="step-dot">2</div><div class="step-name">[Stage 2]</div></div>
+          <div class="pipeline-step"><div class="step-dot">3</div><div class="step-name">[Stage 3]</div></div>
+          <div class="pipeline-step"><div class="step-dot">4</div><div class="step-name">[Stage 4]</div></div>
+          <div class="pipeline-step"><div class="step-dot">5</div><div class="step-name">[Stage 5]</div></div>
+        </div>
+        <div class="placeholder">
+          <span class="ph-label">✦ Stage Descriptions</span>
+          Add a brief description of what each pipeline stage represents,
+          so actors can orient themselves before working on their character.
+        </div>
+      </div>
+
+      <!-- CHARACTER ENTRIES
+           Each .character-entry is one character accordion.
+           Click the heading to expand the worksheet.
+
+           EDIT:
+           - Replace [Character Name N] and [Brief role description]
+           - Replace the dramaturg-note-inline placeholder text
+           - Add or customize worksheet questions
+
+           ADD A CHARACTER:
+           - Duplicate an entire .character-entry block
+           - Give it a new id (char-4, char-5, etc.)
+           - Update onclick="toggleChar('char-N')" to match
+      -->
+
+      <div class="character-entry" id="char-1">
+        <button class="character-toggle" onclick="toggleChar('char-1')">
+          <div>
+            <div class="char-name-display">[Character Name 1]</div>
+            <div class="char-role-display">[Brief role description]</div>
+          </div>
+          <span class="toggle-chevron">▾</span>
+        </button>
+        <div class="character-body">
+          <div class="dramaturg-note-inline">
+            <strong>🦝 Dramaturg's Suggestion</strong>
+            [Your hypothesis about this character's pipeline journey. What was their entry point?
+            What vulnerability or grievance made them susceptible? What keeps them in?]
+          </div>
+          <div class="worksheet">
+            <div><label class="field-label">Where do you think your character entered the pipeline?</label><input class="fill-line" type="text" placeholder="Your answer..." /></div>
+            <div><label class="field-label">What was your character's core grievance or unmet need?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">What stage of the pipeline are they at by the start of the play?</label><input class="fill-line" type="text" placeholder="Stage number and name..." /></div>
+            <div><label class="field-label">Who or what was the most influential force in their radicalization?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Is there anything that could pull them back? What would it take?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <!-- ADD MORE QUESTIONS: duplicate a <div> block above -->
+          </div>
+        </div>
+      </div>
+
+      <div class="character-entry" id="char-2">
+        <button class="character-toggle" onclick="toggleChar('char-2')">
+          <div>
+            <div class="char-name-display">[Character Name 2]</div>
+            <div class="char-role-display">[Brief role description]</div>
+          </div>
+          <span class="toggle-chevron">▾</span>
+        </button>
+        <div class="character-body">
+          <div class="dramaturg-note-inline">
+            <strong>🦝 Dramaturg's Suggestion</strong>
+            [Your notes on this character's pipeline journey.]
+          </div>
+          <div class="worksheet">
+            <div><label class="field-label">Where do you think your character entered the pipeline?</label><input class="fill-line" type="text" placeholder="Your answer..." /></div>
+            <div><label class="field-label">What was your character's core grievance or unmet need?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">What stage of the pipeline are they at by the start of the play?</label><input class="fill-line" type="text" placeholder="Stage number and name..." /></div>
+            <div><label class="field-label">Who or what was the most influential force in their radicalization?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Is there anything that could pull them back? What would it take?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="character-entry" id="char-3">
+        <button class="character-toggle" onclick="toggleChar('char-3')">
+          <div>
+            <div class="char-name-display">[Character Name 3]</div>
+            <div class="char-role-display">[Brief role description]</div>
+          </div>
+          <span class="toggle-chevron">▾</span>
+        </button>
+        <div class="character-body">
+          <div class="dramaturg-note-inline">
+            <strong>🦝 Dramaturg's Suggestion</strong>
+            [Your notes on this character's pipeline journey.]
+          </div>
+          <div class="worksheet">
+            <div><label class="field-label">Where do you think your character entered the pipeline?</label><input class="fill-line" type="text" placeholder="Your answer..." /></div>
+            <div><label class="field-label">What was your character's core grievance or unmet need?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">What stage of the pipeline are they at by the start of the play?</label><input class="fill-line" type="text" placeholder="Stage number and name..." /></div>
+            <div><label class="field-label">Who or what was the most influential force in their radicalization?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Is there anything that could pull them back? What would it take?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+          </div>
+        </div>
+      </div>
+
+      <!--
+        ADD A NEW CHARACTER — copy this block, change id and onclick:
+
+        <div class="character-entry" id="char-4">
+          <button class="character-toggle" onclick="toggleChar('char-4')">
+            <div>
+              <div class="char-name-display">[Character Name 4]</div>
+              <div class="char-role-display">[Brief role description]</div>
+            </div>
+            <span class="toggle-chevron">▾</span>
+          </button>
+          <div class="character-body">
+            <div class="dramaturg-note-inline">
+              <strong>🦝 Dramaturg's Suggestion</strong>
+              [Your notes.]
+            </div>
+            <div class="worksheet">
+              ... (copy questions from above)
+            </div>
+          </div>
+        </div>
+      -->
+    </section>
+
+    <!--
+      ============================================================
+      ADD A NEW SECTION — copy this template:
+
+      <section class="section" id="your-section-id">
+        <div class="section-eyebrow">
+          <span class="section-num">09</span>
+          <span class="section-rule"></span>
+          <span class="section-tag">Section Tag</span>
+        </div>
+        <h2>Section Heading</h2>
+        <div class="placeholder">
+          <span class="ph-label">✦ Placeholder</span>
+          Your content goes here.
+        </div>
+      </section>
+
+      Then add to nav:
+      <li><a href="#your-section-id">Section Title</a></li>
+      ============================================================
+    -->
+
+  </main>
+
+  <!-- ============================================================
+       NODE DETAIL PANEL
+       Slides in when a graph node is clicked.
+       Populated dynamically by openPanel() in the script below.
+       ============================================================ -->
+  <div id="node-panel" role="dialog" aria-modal="true" aria-labelledby="panel-title">
+    <div class="panel-top">
+      <div class="panel-top-meta">
+        <div>
+          <div class="panel-type-tag" id="panel-type-tag">Topic</div>
+          <h3 id="panel-title">—</h3>
+        </div>
+        <button class="panel-close" onclick="closePanel()" aria-label="Close panel">✕</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="panel-heading">Our Notes</div>
+      <div class="panel-blurb" id="panel-blurb"></div>
+      <div class="panel-heading">Pulled Quotes</div>
+      <div id="panel-quotes"></div>
+      <div class="panel-heading">Further Resources</div>
+      <div id="panel-resources"></div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       JAVASCRIPT
+       ============================================================ -->
+  <script>
+
+    // =============================================================
+    // NODE DATA
+    // Edit each node's blurb, quotes, and resources to add content.
+    //
+    // FIELDS:
+    //   id        — unique key used in links array
+    //   label     — text shown on the graph node (\n = line break)
+    //   anchor    — true = larger anchor node (darker green)
+    //   blurb     — your research notes (plain text string)
+    //   quotes    — array of { text: "...", attribution: "— Source" }
+    //   resources — array of { label: "...", url: "https://...", type: "book"|"article"|"video"|"link" }
+    // =============================================================
+    const nodes = [
+      {
+        id: "emotion", label: "Emotion &\nPsychology", anchor: true,
+        blurb: "[PLACEHOLDER] Add your notes on Emotion and Psychology here. What aspects of emotional manipulation, psychological vulnerability, or affective politics are most relevant to this play?",
+        quotes: [
+          { text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" },
+          { text: "[PLACEHOLDER] Add another quote here.", attribution: "— Source, Title" }
+        ],
+        resources: [
+          { label: "[Resource 1 — e.g. Book or Article]", url: "#", type: "book" },
+          { label: "[Resource 2 — e.g. Video or Podcast]", url: "#", type: "video" }
+        ]
+      },
+      {
+        id: "algorithms", label: "Algorithms,\nInterface &\nthe Internet", anchor: true,
+        blurb: "[PLACEHOLDER] Add your notes on Algorithms, Interface, and the Internet. How do recommendation systems, platform design, and online ecosystems shape the world of this play?",
+        quotes: [
+          { text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" },
+          { text: "[PLACEHOLDER] Add another quote here.", attribution: "— Source, Title" }
+        ],
+        resources: [
+          { label: "[Resource 1]", url: "#", type: "link" },
+          { label: "[Resource 2]", url: "#", type: "video" }
+        ]
+      },
+      {
+        id: "conspiracy", label: "Conspiracy\nThinking", anchor: false,
+        blurb: "[PLACEHOLDER] Add your notes on Conspiracy Thinking. How does conspiratorial logic function? What makes it seductive? How does it appear in this play?",
+        quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
+        resources: [{ label: "[Resource 1]", url: "#", type: "book" }]
+      },
+      {
+        id: "queer", label: "Queer\nStudies", anchor: false,
+        blurb: "[PLACEHOLDER] Add your notes on Queer Studies. What queer theory, history, or politics are relevant to this production?",
+        quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
+        resources: [{ label: "[Resource 1]", url: "#", type: "book" }]
+      },
+      {
+        id: "fragmentation", label: "Fragmentation &\nInternal Conflict", anchor: false,
+        blurb: "[PLACEHOLDER] Add your notes on Fragmentation and Internal Conflict. How does this manifest in the characters, communities, or movements in the play?",
+        quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
+        resources: [{ label: "[Resource 1]", url: "#", type: "link" }]
+      },
+      {
+        id: "humor", label: "Humor, Memes\n& Tone", anchor: false,
+        blurb: "[PLACEHOLDER] Add your notes on Humor, Memes, and Tone. How do meme culture, irony, and comedic register function politically in this play and in the world it depicts?",
+        quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
+        resources: [{ label: "[Resource 1]", url: "#", type: "video" }]
+      },
+      {
+        id: "radicalization", label: "Radicalization", anchor: false,
+        blurb: "[PLACEHOLDER] Add your notes on Radicalization. What models or frameworks are you drawing on? How does the pipeline function in this play?",
+        quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
+        resources: [{ label: "[Resource 1]", url: "#", type: "book" }]
+      },
+      {
+        id: "complicity", label: "Complicity &\nEthics", anchor: false,
+        blurb: "[PLACEHOLDER] Add your notes on Complicity and Ethics. What ethical questions does the play raise? Who is complicit, and how does it implicate its audience?",
+        quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
+        resources: [{ label: "[Resource 1]", url: "#", type: "link" }]
+      },
+      {
+        id: "class", label: "Class &\nPoverty", anchor: false,
+        blurb: "[PLACEHOLDER] Add your notes on Class and Poverty. How do economic precarity, class resentment, and material conditions shape the characters' political trajectories?",
+        quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
+        resources: [{ label: "[Resource 1]", url: "#", type: "book" }]
+      }
+    ];
+
+    // =============================================================
+    // GRAPH LINKS — all confirmed connections.
+    // Add { source: "id", target: "id" } to add a new connection.
+    // Remove a line to remove a connection.
+    // =============================================================
+    const links = [
+      // Anchor: Emotion and Psychology
+      { source: "emotion", target: "class" },
+      { source: "emotion", target: "complicity" },
+      { source: "emotion", target: "fragmentation" },
+      { source: "emotion", target: "humor" },
+      { source: "emotion", target: "queer" },
+      { source: "emotion", target: "conspiracy" },
+      // Anchor: Algorithms, Interface, and the Internet
+      { source: "algorithms", target: "radicalization" },
+      { source: "algorithms", target: "queer" },
+      { source: "algorithms", target: "conspiracy" },
+      { source: "algorithms", target: "fragmentation" },
+      { source: "algorithms", target: "humor" },
+      { source: "algorithms", target: "complicity" },
+      // Radicalization
+      { source: "radicalization", target: "conspiracy" },
+      { source: "radicalization", target: "class" },
+      { source: "radicalization", target: "complicity" },
+      { source: "radicalization", target: "humor" },
+      // Conspiracy
+      { source: "conspiracy", target: "complicity" },
+      { source: "conspiracy", target: "fragmentation" },
+      { source: "conspiracy", target: "humor" },
+      // Confirmed additional connections
+      { source: "queer", target: "fragmentation" },
+      { source: "class", target: "complicity" }
+    ];
+
+    // =============================================================
+    // D3 FORCE-DIRECTED GRAPH
+    // Renders the network. Edit color constants to tweak appearance.
+    // You shouldn't need to change the simulation logic below.
+    // =============================================================
+    (function buildGraph() {
+      const container = document.getElementById('network-graph-container');
+      const W = container.clientWidth;
+      const H = container.clientHeight;
+
+      // Node colors — matches CSS palette above
+      const ANCHOR_FILL  = '#4a6741';   // --moss
+      const REGULAR_FILL = '#2e2318';   // --soil
+      const HOVER_FILL   = '#9e6a47';   // --clay
+      const ANCHOR_R     = 46;          // radius of anchor nodes
+      const REGULAR_R    = 34;          // radius of regular nodes
+
+      const svg = d3.select('#network-graph-container')
+        .append('svg')
+        .attr('width', W).attr('height', H)
+        .attr('aria-hidden', 'true');
+
+      // Zoom/pan container
+      const g = svg.append('g');
+      svg.call(d3.zoom().scaleExtent([0.35, 2.8]).on('zoom', e => g.attr('transform', e.transform)));
+
+      // Link lines
+      const link = g.append('g')
+        .selectAll('line').data(links).join('line')
+        .attr('stroke', '#c8beae').attr('stroke-width', 1.5).attr('stroke-opacity', 0.7);
+
+      // Node groups
+      const node = g.append('g')
+        .selectAll('g').data(nodes).join('g')
+        .attr('cursor', 'pointer')
+        .call(d3.drag()
+          .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+          .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
+          .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
+        )
+        .on('click', (event, d) => { event.stopPropagation(); openPanel(d); });
+
+      // Circles
+      node.append('circle')
+        .attr('r', d => d.anchor ? ANCHOR_R : REGULAR_R)
+        .attr('fill', d => d.anchor ? ANCHOR_FILL : REGULAR_FILL)
+        .attr('stroke', '#f2ece0').attr('stroke-width', 2.5)
+        .on('mouseover', function(e, d) { d3.select(this).transition().duration(120).attr('fill', HOVER_FILL); })
+        .on('mouseout',  function(e, d) { d3.select(this).transition().duration(120).attr('fill', d.anchor ? ANCHOR_FILL : REGULAR_FILL); });
+
+      // Multiline labels via tspan
+      node.each(function(d) {
+        const lines = d.label.split('\n');
+        const fontSize = d.anchor ? 10.5 : 9.5;
+        const lineH = fontSize + 2.5;
+        const totalH = lines.length * lineH;
+        const text = d3.select(this).append('text')
+          .attr('text-anchor', 'middle').attr('fill', '#f2ece0')
+          .attr('font-family', "'Lora', Georgia, serif").attr('font-size', fontSize)
+          .attr('pointer-events', 'none');
+        lines.forEach((line, i) => {
+          text.append('tspan').attr('x', 0)
+            .attr('dy', i === 0 ? -(totalH / 2) + fontSize : lineH)
+            .text(line);
+        });
+      });
+
+      // Force simulation
+      const sim = d3.forceSimulation(nodes)
+        .force('link',      d3.forceLink(links).id(d => d.id).distance(145))
+        .force('charge',    d3.forceManyBody().strength(-430))
+        .force('center',    d3.forceCenter(W / 2, H / 2))
+        .force('collision', d3.forceCollide(d => d.anchor ? ANCHOR_R + 20 : REGULAR_R + 16))
+        .on('tick', () => {
+          link
+            .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+          node.attr('transform', d => `translate(${d.x},${d.y})`);
+        });
+
+      // Clicking the graph background closes the panel
+      svg.on('click', closePanel);
+    })();
+
+    // =============================================================
+    // PANEL — open, populate, close
+    // =============================================================
+    function openPanel(d) {
+      const panel = document.getElementById('node-panel');
+
+      document.getElementById('panel-type-tag').textContent = d.anchor ? 'Anchor Topic' : 'Networked Topic';
+      document.getElementById('panel-title').textContent = d.label.replace(/\n/g, ' ');
+      document.getElementById('panel-blurb').textContent = d.blurb;
+
+      // Quotes
+      const qEl = document.getElementById('panel-quotes');
+      qEl.innerHTML = '';
+      (d.quotes || []).forEach(q => {
+        const div = document.createElement('div');
+        div.className = 'panel-quote';
+        div.innerHTML = `<p>${q.text}</p><span class="attr">${q.attribution}</span>`;
+        qEl.appendChild(div);
+      });
+      if (!d.quotes || !d.quotes.length)
+        qEl.innerHTML = '<em style="color:var(--lichen);font-size:0.85rem;">No quotes added yet.</em>';
+
+      // Resources
+      const rEl = document.getElementById('panel-resources');
+      rEl.innerHTML = '';
+      (d.resources || []).forEach(r => {
+        const a = document.createElement('a');
+        a.className = 'panel-resource-link';
+        a.href = r.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+        a.innerHTML = `<span class="resource-type-tag">${r.type}</span><span>${r.label}</span>`;
+        rEl.appendChild(a);
+      });
+      if (!d.resources || !d.resources.length)
+        rEl.innerHTML = '<em style="color:var(--lichen);font-size:0.85rem;">No resources added yet.</em>';
+
+      panel.classList.add('open');
+    }
+
+    function closePanel() { document.getElementById('node-panel').classList.remove('open'); }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+
+    // =============================================================
+    // CHARACTER ACCORDION — toggle open/closed on click
+    // =============================================================
+    function toggleChar(id) { document.getElementById(id).classList.toggle('open'); }
+
+    // =============================================================
+    // SCROLL SPY — highlights the current section in the nav sidebar
+    // =============================================================
+    document.querySelectorAll('.section').forEach(section => {
+      new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            const id = e.target.id;
+            document.querySelectorAll('nav ul li a').forEach(l =>
+              l.classList.toggle('active', l.getAttribute('href') === `#${id}`)
+            );
+          }
+        });
+      }, { threshold: 0.25 }).observe(section);
+    });
+
+  </script>
+</body>
+</html>
