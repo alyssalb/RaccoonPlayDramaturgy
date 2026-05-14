@@ -7,39 +7,32 @@
 
   <!-- ============================================================
        FONTS
-       Cormorant Garamond: old-paper editorial serif for headings.
-       Lora: warm, readable serif for body — feels like a well-loved
-       anthology or field notebook.
+       Cormorant Garamond: editorial serif for headings
+       Lora: warm serif for body text
        ============================================================ -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
 
-  <!-- D3.js — used to render the interactive network graph -->
+  <!-- D3.js — for the interactive network graph on page 4 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 
   <style>
     /* ============================================================
        DESIGN TOKENS — naturalistic palette
-       Edit these to retheme the whole site at once.
-       linen    = warm page background
-       parchment= slightly deeper warm white (graph bg)
-       soil     = near-black text and nav
-       clay     = terracotta accent / highlight
-       moss     = forest green for anchor nodes
-       lichen   = muted sage for secondary text
-       fog      = mid-tone rule lines
-       paper    = panel background
+       Edit these variables to retheme the entire site at once.
        ============================================================ */
     :root {
-      --linen:     #f2ece0;
-      --parchment: #ede4d0;
-      --soil:      #2e2318;
-      --clay:      #9e6a47;
-      --moss:      #4a6741;
-      --lichen:    #8a9e7a;
-      --fog:       #c8beae;
-      --paper:     #f8f4ec;
+      --linen:      #f2ece0;   /* warm page background */
+      --parchment:  #ede4d0;   /* slightly deeper warm white */
+      --soil:       #2e2318;   /* near-black text / nav bg */
+      --clay:       #9e6a47;   /* terracotta accent */
+      --moss:       #4a6741;   /* forest green — anchor nodes */
+      --lichen:     #8a9e7a;   /* muted sage — secondary text */
+      --fog:        #c8beae;   /* mid-tone rule lines */
+      --paper:      #f8f4ec;   /* panel / node detail bg */
+
+      --nav-width:  200px;     /* sidebar width — change here to resize nav */
 
       --font-display: 'Cormorant Garamond', Georgia, serif;
       --font-body:    'Lora', Georgia, serif;
@@ -50,7 +43,7 @@
        RESET & BASE
        ============================================================ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    html, body { height: 100%; overflow: hidden; } /* no page scroll — sections are pages */
 
     body {
       font-family: var(--font-body);
@@ -60,7 +53,7 @@
       line-height: 1.8;
     }
 
-    /* Subtle paper-grain texture across the whole page */
+    /* Subtle paper grain texture across the whole page */
     body::before {
       content: '';
       position: fixed;
@@ -71,19 +64,29 @@
     }
 
     /* ============================================================
-       NAVIGATION — slender fixed left sidebar
+       LAYOUT — sidebar + content area side by side, full height
+       ============================================================ */
+    #app {
+      display: flex;
+      height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ============================================================
+       SIDEBAR NAVIGATION
+       Fixed width left column. Links switch the visible page.
        ============================================================ */
     nav {
-      position: fixed;
-      top: 0; left: 0;
-      width: 200px;
-      height: 100vh;
+      width: var(--nav-width);
+      flex-shrink: 0;
       background: var(--soil);
+      height: 100vh;
       display: flex;
       flex-direction: column;
       padding: 2.5rem 1.5rem 2rem;
-      z-index: 100;
       overflow-y: auto;
+      z-index: 100;
     }
 
     .nav-logo {
@@ -96,124 +99,149 @@
       opacity: 0.9;
     }
 
-    .nav-raccoon { display: block; font-style: normal; font-size: 1.3rem; margin-bottom: 0.3rem; opacity: 0.6; }
+    .nav-raccoon {
+      display: block;
+      font-style: normal;
+      font-size: 1.3rem;
+      margin-bottom: 0.3rem;
+      opacity: 0.6;
+    }
 
     nav ul { list-style: none; }
     nav ul li { margin-bottom: 0.05rem; }
 
-    nav ul li a {
+    /* Nav links are buttons that call showPage() */
+    nav ul li button {
       display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
       color: rgba(242,236,224,0.5);
-      text-decoration: none;
       font-family: var(--font-body);
       font-size: 0.72rem;
       letter-spacing: 0.04em;
       padding: 0.38rem 0.5rem;
       border-radius: 2px;
-      transition: color var(--transition);
+      cursor: pointer;
       line-height: 1.4;
+      transition: color var(--transition);
     }
 
-    /* Hover / active: brighten text + thin left rule — no boxy highlight */
-    nav ul li a:hover { color: rgba(242,236,224,0.85); }
-    nav ul li a.active { color: var(--linen); border-left: 2px solid var(--clay); padding-left: 0.75rem; }
+    nav ul li button:hover { color: rgba(242,236,224,0.85); }
 
-    /* ============================================================
-       MAIN — offset by sidebar width
-       ============================================================ */
-    main { margin-left: 200px; position: relative; z-index: 1; }
-
-    /* ============================================================
-       HERO — full-bleed dark header, typography-led
-       ============================================================ */
-    .site-hero {
-      background: var(--soil);
+    /* Active page: full brightness + clay left rule */
+    nav ul li button.active {
       color: var(--linen);
-      padding: 6rem 5rem 5rem;
+      border-left: 2px solid var(--clay);
+      padding-left: 0.75rem;
+    }
+
+    /* ============================================================
+       CONTENT AREA — fills remaining width, full height
+       Each .page sits here. Only the active one is visible.
+       ============================================================ */
+    #content {
+      flex: 1;
+      height: 100vh;
       position: relative;
       overflow: hidden;
     }
 
-    /* Ghost raccoon — purely decorative */
-    .site-hero::after {
-      content: '🦝';
+    /* ============================================================
+       PAGES — each section is a full-height page
+       All pages are stacked; JS adds .active to show one at a time.
+       ============================================================ */
+    .page {
       position: absolute;
-      right: 4rem; bottom: -1rem;
-      font-size: 12rem;
-      opacity: 0.06;
+      inset: 0;
+      overflow-y: auto;           /* each page scrolls independently */
+      opacity: 0;
       pointer-events: none;
-      filter: grayscale(1);
+      transition: opacity 0.28s ease;
+      padding: 4rem 5rem 6rem;    /* generous breathing room */
     }
 
-    .hero-rule { width: 48px; height: 1px; background: var(--clay); margin-bottom: 1.5rem; }
-
-    .hero-kicker {
-      font-family: var(--font-body);
-      font-size: 0.72rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--clay);
-      margin-bottom: 0.75rem;
-    }
-
-    .site-hero h1 {
-      font-family: var(--font-display);
-      font-size: clamp(2.8rem, 6vw, 5rem);
-      font-weight: 600;
-      font-style: italic;
-      line-height: 1.05;
-      margin-bottom: 1.5rem;
-      color: var(--linen);
-    }
-
-    .hero-tagline {
-      font-family: var(--font-body);
-      font-size: 1rem;
-      color: rgba(242,236,224,0.6);
-      max-width: 460px;
-      line-height: 1.7;
-      font-style: italic;
+    /* The active page fades in */
+    .page.active {
+      opacity: 1;
+      pointer-events: all;
     }
 
     /* ============================================================
-       SECTION — shared editorial layout
+       PAGE NAVIGATION — prev/next arrows at bottom of each page
        ============================================================ */
-    .section {
-      padding: 5rem 5rem 4.5rem;
-      max-width: 860px;
-      border-bottom: 1px solid var(--fog);
+    .page-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--fog);
     }
 
-    .section:last-child { border-bottom: none; }
+    .page-nav-btn {
+      background: none;
+      border: none;
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--lichen);
+      cursor: pointer;
+      padding: 0;
+      transition: color var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
 
-    /* Eyebrow above each heading: number · rule · tag */
-    .section-eyebrow {
+    .page-nav-btn:hover { color: var(--clay); }
+    .page-nav-btn:disabled { opacity: 0; pointer-events: none; }
+
+    .page-nav-center {
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--fog);
+    }
+
+    /* ============================================================
+       SHARED TYPOGRAPHY — used across all pages
+       ============================================================ */
+
+    /* Eyebrow above each page heading: number · rule · tag */
+    .page-eyebrow {
       display: flex;
       align-items: center;
       gap: 0.75rem;
       margin-bottom: 1rem;
     }
 
-    .section-num { font-family: var(--font-display); font-size: 0.85rem; color: var(--clay); font-style: italic; }
-    .section-rule { flex: 1; max-width: 32px; height: 1px; background: var(--fog); }
-    .section-tag { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--lichen); }
+    .page-num   { font-family: var(--font-display); font-size: 0.85rem; color: var(--clay); font-style: italic; }
+    .page-rule  { flex: 1; max-width: 32px; height: 1px; background: var(--fog); }
+    .page-tag   { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--lichen); }
 
-    .section h2 {
+    /* Page heading */
+    h2.page-heading {
       font-family: var(--font-display);
       font-size: clamp(1.8rem, 3.5vw, 2.8rem);
       font-weight: 600;
       line-height: 1.15;
       margin-bottom: 1.75rem;
       color: var(--soil);
+      max-width: 680px;
     }
 
-    .prose { font-size: 1rem; line-height: 1.85; color: #3a2e20; max-width: 640px; }
-    .prose + .prose { margin-top: 1.25rem; }
+    /* Running prose */
+    .prose {
+      font-size: 1rem;
+      line-height: 1.85;
+      color: #3a2e20;
+      max-width: 640px;
+    }
 
-    /* ============================================================
-       PLACEHOLDER — editorial style, not a card.
-       Italic left-rule text, no filled background.
-       ============================================================ */
+    /* Placeholder — italic left-rule note, no filled card */
     .placeholder {
       font-style: italic;
       color: var(--lichen);
@@ -222,6 +250,7 @@
       border-left: 2px solid var(--fog);
       margin: 1.25rem 0;
       line-height: 1.7;
+      max-width: 620px;
     }
 
     .placeholder .ph-label {
@@ -235,7 +264,11 @@
     }
 
     /* ============================================================
-       SECTION 2: AT A GLANCE — horizontal definition list
+       PAGE 1: HOW TO USE — no special styles needed beyond shared
+       ============================================================ */
+
+    /* ============================================================
+       PAGE 2: INTRODUCTION — at-a-glance definition list
        ============================================================ */
     .glance-row {
       display: flex;
@@ -255,9 +288,9 @@
     .glance-item dd { font-family: var(--font-display); font-size: 1.15rem; color: var(--soil); }
 
     /* ============================================================
-       SECTION 3: BIG QUESTIONS — numbered prose lines, no cards
+       PAGE 3: BIG QUESTIONS — numbered list, no cards
        ============================================================ */
-    .questions-list { list-style: none; margin-top: 1rem; }
+    .questions-list { list-style: none; margin-top: 1rem; max-width: 660px; }
 
     .questions-list li {
       display: grid;
@@ -271,15 +304,17 @@
     }
 
     .questions-list li:first-child { border-top: 1px solid var(--fog); }
-
     .q-index { font-family: var(--font-display); font-style: italic; color: var(--clay); font-size: 1.1rem; }
 
     /* ============================================================
-       SECTION 4: NETWORK GRAPH
+       PAGE 4: NETWORKED TOPICS — graph + node panel
        ============================================================ */
+
+    /* Graph container fills most of the page height */
     #network-graph-container {
       width: 100%;
-      height: 520px;
+      height: calc(100vh - 280px); /* leaves room for heading + hint */
+      min-height: 340px;
       background: var(--parchment);
       border-radius: 4px;
       overflow: hidden;
@@ -304,22 +339,20 @@
       font-style: italic;
     }
 
-    /* ============================================================
-       NODE DETAIL PANEL — slides in from right
-       ============================================================ */
+    /* Node detail panel — slides in from right edge of content area */
     #node-panel {
       position: fixed;
-      top: 0; right: -500px;
-      width: 440px;
-      max-width: 94vw;
+      top: 0;
+      right: -500px;
+      width: 420px;
+      max-width: 90vw;
       height: 100vh;
       background: var(--paper);
       box-shadow: -2px 0 40px rgba(46,35,24,0.15);
       z-index: 200;
       display: flex;
       flex-direction: column;
-      transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-      overflow: hidden;
+      transition: right 0.32s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     #node-panel.open { right: 0; }
@@ -332,14 +365,7 @@
     }
 
     .panel-top-meta { display: flex; justify-content: space-between; align-items: flex-start; }
-
-    .panel-type-tag {
-      font-size: 0.62rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--clay);
-      margin-bottom: 0.6rem;
-    }
+    .panel-type-tag { font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--clay); margin-bottom: 0.6rem; }
 
     #panel-title {
       font-family: var(--font-display);
@@ -351,15 +377,10 @@
     }
 
     .panel-close {
-      background: none;
-      border: none;
+      background: none; border: none;
       color: rgba(242,236,224,0.5);
-      font-size: 1.2rem;
-      cursor: pointer;
-      padding: 0.2rem;
-      line-height: 1;
-      transition: color var(--transition);
-      flex-shrink: 0;
+      font-size: 1.2rem; cursor: pointer; padding: 0.2rem; line-height: 1;
+      transition: color var(--transition); flex-shrink: 0;
     }
 
     .panel-close:hover { color: var(--linen); }
@@ -367,65 +388,43 @@
     .panel-body { flex: 1; overflow-y: auto; padding: 2rem 1.75rem; }
 
     .panel-heading {
-      font-size: 0.65rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--lichen);
-      margin-bottom: 0.75rem;
-      margin-top: 2rem;
-      padding-bottom: 0.4rem;
-      border-bottom: 1px solid var(--fog);
+      font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--lichen); margin-bottom: 0.75rem; margin-top: 2rem;
+      padding-bottom: 0.4rem; border-bottom: 1px solid var(--fog);
     }
 
     .panel-heading:first-child { margin-top: 0; }
 
     .panel-blurb { font-size: 0.93rem; line-height: 1.8; color: #3a2e20; font-style: italic; }
 
-    /* Quotes — open, no box */
-    .panel-quote {
-      margin: 1rem 0;
-      padding-left: 1.25rem;
-      border-left: 2px solid var(--lichen);
-    }
-
+    .panel-quote { margin: 1rem 0; padding-left: 1.25rem; border-left: 2px solid var(--lichen); }
     .panel-quote p { font-family: var(--font-display); font-size: 1.1rem; font-style: italic; line-height: 1.5; color: var(--soil); }
-    .panel-quote .attr { display: block; font-size: 0.75rem; color: var(--lichen); margin-top: 0.4rem; letter-spacing: 0.04em; }
+    .panel-quote .attr { display: block; font-size: 0.75rem; color: var(--lichen); margin-top: 0.4rem; }
 
-    /* Resources — inline text links */
     .panel-resource-link {
-      display: flex;
-      align-items: baseline;
-      gap: 0.5rem;
-      padding: 0.5rem 0;
-      border-bottom: 1px solid var(--fog);
-      text-decoration: none;
-      color: var(--soil);
-      font-size: 0.88rem;
+      display: flex; align-items: baseline; gap: 0.5rem;
+      padding: 0.5rem 0; border-bottom: 1px solid var(--fog);
+      text-decoration: none; color: var(--soil); font-size: 0.88rem;
       transition: color var(--transition);
     }
 
     .panel-resource-link:last-child { border-bottom: none; }
     .panel-resource-link:hover { color: var(--clay); }
-
     .resource-type-tag { font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--lichen); flex-shrink: 0; }
 
     /* ============================================================
-       SECTION 5: RACCOON CULTURE — flowing sub-topics
+       PAGE 5: RACCOON CULTURE
        ============================================================ */
-    .raccoon-topic { margin-bottom: 2.5rem; }
+    .raccoon-topic { margin-bottom: 2.5rem; max-width: 640px; }
 
     .raccoon-topic h4 {
-      font-family: var(--font-display);
-      font-size: 1.2rem;
-      font-style: italic;
-      color: var(--soil);
-      margin-bottom: 0.5rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid var(--fog);
+      font-family: var(--font-display); font-size: 1.2rem; font-style: italic;
+      color: var(--soil); margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem; border-bottom: 1px solid var(--fog);
     }
 
     /* ============================================================
-       SECTION 6: REFERENCES — editorial text list, no cards
+       PAGE 6: REFERENCE DOCS — editorial text list
        ============================================================ */
     .reference-entry {
       display: grid;
@@ -434,248 +433,210 @@
       padding: 1rem 0;
       border-bottom: 1px solid var(--fog);
       align-items: baseline;
+      max-width: 660px;
     }
 
     .reference-entry:first-of-type { border-top: 1px solid var(--fog); }
-
     .ref-type-tag { font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--lichen); padding-top: 0.2rem; }
     .ref-title { font-family: var(--font-display); font-style: italic; font-size: 1.05rem; color: var(--soil); line-height: 1.3; }
     .ref-meta { font-size: 0.82rem; color: var(--lichen); margin-top: 0.2rem; }
 
     /* ============================================================
-       SECTION 7: VISUAL LIBRARY
+       PAGE 7: VISUAL LIBRARY
        ============================================================ */
-    .visual-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+    .visual-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
 
     .visual-slot {
       aspect-ratio: 4/3;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.4rem;
-      border: 1px dashed var(--fog);
-      border-radius: 2px;
-      color: var(--lichen);
-      font-size: 0.78rem;
-      text-align: center;
-      padding: 1rem;
-      font-style: italic;
-      transition: border-color var(--transition);
-      cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.4rem; border: 1px dashed var(--fog); border-radius: 2px;
+      color: var(--lichen); font-size: 0.78rem; text-align: center; padding: 1rem;
+      font-style: italic; transition: border-color var(--transition); cursor: pointer;
     }
 
     .visual-slot:hover { border-color: var(--clay); color: var(--clay); }
     .visual-slot .slot-icon { font-size: 1.5rem; opacity: 0.5; }
 
     /* ============================================================
-       SECTION 8: CHARACTER PIPELINE WORKSHEET
+       PAGE 8: CHARACTER PIPELINE
        ============================================================ */
     .activity-intro {
-      font-style: italic;
-      font-size: 0.97rem;
-      color: #4a3e2c;
-      padding-left: 1.5rem;
-      border-left: 3px solid var(--moss);
+      font-style: italic; font-size: 0.97rem; color: #4a3e2c;
+      padding-left: 1.5rem; border-left: 3px solid var(--moss);
+      margin-bottom: 2.5rem; max-width: 580px; line-height: 1.85;
+    }
+
+    /* Cycle diagram */
+    .cycle-diagram-wrap { display: flex; justify-content: flex-start; margin: 1.5rem 0 2rem; }
+    .cycle-diagram { width: 100%; max-width: 280px; height: auto; }
+
+    /* Two-column layout on wider screens: diagram left, stage descriptions right */
+    .pipeline-layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 2rem;
+      align-items: start;
       margin-bottom: 3rem;
-      max-width: 580px;
-      line-height: 1.85;
     }
 
-    /* ============================================================
-       PIPELINE MODEL — cycle diagram + stage descriptions
-       ============================================================ */
-
-    .cycle-diagram-wrap {
-      display: flex;
-      justify-content: center;
-      margin: 1.5rem 0 2.5rem;
+    @media (max-width: 900px) {
+      .pipeline-layout { grid-template-columns: 1fr; }
     }
 
-    /* SVG diagram scales fluidly, capped at 320px */
-    .cycle-diagram { width: 100%; max-width: 320px; height: auto; }
-
-    /* Stage description blocks */
     .pipeline-stage-descriptions { display: flex; flex-direction: column; gap: 0; }
 
     .stage-desc {
-      padding: 1.5rem 0 1.5rem 1.25rem;
+      padding: 1.1rem 0 1.1rem 1.25rem;
       border-left: 2px solid var(--soil);
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
     }
 
-    .stage-desc-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem; }
-
-    /* Colored dot matching the node color in the diagram */
+    .stage-desc-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.4rem; }
     .stage-swatch { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .stage-desc h4 { font-family: var(--font-display); font-size: 1.1rem; font-style: italic; color: var(--soil); }
+    .stage-desc p { font-size: 0.88rem; line-height: 1.75; color: #3a2e20; }
 
-    .stage-desc h4 { font-family: var(--font-display); font-size: 1.2rem; font-style: italic; color: var(--soil); }
-
-    .stage-desc p { font-size: 0.95rem; line-height: 1.8; color: #3a2e20; max-width: 580px; }
-
-    /* Character accordion — separated by thin rules, no card border */
-    .character-entry { border-top: 1px solid var(--fog); }
-    .character-entry:last-child { border-bottom: 1px solid var(--fog); }
+    /* Character accordion */
+    .character-entry { border-top: 1px solid var(--fog); max-width: 700px; }
+    .character-entry:last-of-type { border-bottom: 1px solid var(--fog); }
 
     .character-toggle {
-      width: 100%;
-      background: none;
-      border: none;
-      padding: 1.5rem 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      cursor: pointer;
-      text-align: left;
-      gap: 1rem;
+      width: 100%; background: none; border: none;
+      padding: 1.25rem 0;
+      display: flex; justify-content: space-between; align-items: baseline;
+      cursor: pointer; text-align: left; gap: 1rem;
     }
 
-    .char-name-display { font-family: var(--font-display); font-size: 1.4rem; font-style: italic; color: var(--soil); line-height: 1.1; }
-    .char-role-display { font-size: 0.78rem; color: var(--lichen); letter-spacing: 0.04em; margin-top: 0.15rem; }
+    .char-name-display { font-family: var(--font-display); font-size: 1.35rem; font-style: italic; color: var(--soil); line-height: 1.1; }
+    .char-role-display { font-size: 0.78rem; color: var(--lichen); margin-top: 0.15rem; }
     .toggle-chevron { font-size: 0.75rem; color: var(--lichen); transition: transform 0.2s; flex-shrink: 0; }
     .character-entry.open .toggle-chevron { transform: rotate(180deg); }
 
-    .character-body { display: none; padding-bottom: 2.5rem; }
+    .character-body { display: none; padding-bottom: 2rem; }
     .character-entry.open .character-body { display: block; }
 
-    /* Dramaturg's note — prose note, not a box */
     .dramaturg-note-inline {
-      font-style: italic;
-      font-size: 0.9rem;
-      color: var(--lichen);
-      padding-left: 1.25rem;
-      border-left: 2px solid var(--moss);
-      margin-bottom: 2rem;
-      line-height: 1.8;
+      font-style: italic; font-size: 0.9rem; color: var(--lichen);
+      padding-left: 1.25rem; border-left: 2px solid var(--moss);
+      margin-bottom: 1.75rem; line-height: 1.8;
     }
 
     .dramaturg-note-inline strong {
-      display: block;
-      font-style: normal;
-      font-size: 0.62rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--moss);
-      margin-bottom: 0.4rem;
+      display: block; font-style: normal; font-size: 0.62rem;
+      letter-spacing: 0.15em; text-transform: uppercase; color: var(--moss); margin-bottom: 0.4rem;
     }
 
-    /* Worksheet fields — open underline style */
-    .worksheet { display: flex; flex-direction: column; gap: 1.5rem; }
+    .worksheet { display: flex; flex-direction: column; gap: 1.25rem; }
 
-    .field-label { display: block; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--lichen); margin-bottom: 0.5rem; }
+    .field-label { display: block; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--lichen); margin-bottom: 0.45rem; }
 
     .fill-line {
-      display: block; width: 100%;
-      border: none; border-bottom: 1px solid var(--fog);
-      background: transparent;
-      padding: 0.3rem 0 0.4rem;
-      font-family: var(--font-body); font-size: 0.95rem; color: var(--soil);
-      outline: none;
+      display: block; width: 100%; border: none;
+      border-bottom: 1px solid var(--fog); background: transparent;
+      padding: 0.3rem 0 0.4rem; font-family: var(--font-body);
+      font-size: 0.92rem; color: var(--soil); outline: none;
       transition: border-color var(--transition);
     }
 
     .fill-line:focus { border-color: var(--clay); }
 
     .fill-area {
-      display: block; width: 100%;
-      border: none; border-bottom: 1px solid var(--fog);
-      background: transparent;
-      padding: 0.3rem 0 0.4rem;
-      font-family: var(--font-body); font-size: 0.95rem; color: var(--soil);
-      outline: none; min-height: 64px; resize: none;
+      display: block; width: 100%; border: none;
+      border-bottom: 1px solid var(--fog); background: transparent;
+      padding: 0.3rem 0 0.4rem; font-family: var(--font-body);
+      font-size: 0.92rem; color: var(--soil); outline: none;
+      min-height: 58px; resize: none;
       transition: border-color var(--transition);
     }
 
     .fill-area:focus { border-color: var(--clay); }
 
-    /* Print button — subtle text link */
     .print-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.78rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--lichen);
-      background: none; border: none;
-      cursor: pointer; padding: 0;
-      margin-bottom: 2.5rem;
-      transition: color var(--transition);
-      font-family: var(--font-body);
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--lichen); background: none; border: none; cursor: pointer; padding: 0;
+      margin-bottom: 2rem; transition: color var(--transition); font-family: var(--font-body);
     }
 
     .print-link:hover { color: var(--clay); }
 
     /* ============================================================
-       RESPONSIVE
+       RESPONSIVE — stack nav on mobile
        ============================================================ */
-    @media (max-width: 720px) {
-      nav { position: relative; width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; padding: 1rem; }
+    @media (max-width: 700px) {
+      html, body { overflow: auto; }
+      #app { flex-direction: column; height: auto; }
+      nav { width: 100%; height: auto; flex-direction: row; flex-wrap: wrap; padding: 1rem; }
       nav ul { flex-direction: row; flex-wrap: wrap; gap: 0.25rem; }
-      nav ul li a.active { border-left: none; border-bottom: 2px solid var(--clay); padding-left: 0.5rem; }
-      main { margin-left: 0; }
-      .section { padding: 3rem 1.5rem; }
-      .site-hero { padding: 3rem 1.5rem; }
-      #node-panel { width: 100%; right: -100%; }
+      nav ul li button { font-size: 0.68rem; }
+      nav ul li button.active { border-left: none; border-bottom: 2px solid var(--clay); padding-left: 0.5rem; }
+      #content { height: auto; overflow: visible; }
+      .page { position: relative; opacity: 1; pointer-events: all; display: none; padding: 2rem 1.25rem 4rem; }
+      .page.active { display: block; }
+      #network-graph-container { height: 360px; }
+      .pipeline-layout { grid-template-columns: 1fr; }
     }
 
     @media print {
-      nav, #node-panel, .print-link, .graph-hint, #network-graph-container { display: none !important; }
-      main { margin-left: 0; }
-      .section { padding: 1.5rem; page-break-inside: avoid; }
+      nav, #node-panel, .print-link, .graph-hint, .page-nav, #network-graph-container { display: none !important; }
+      html, body { overflow: auto; height: auto; }
+      #content { height: auto; overflow: visible; }
+      .page { position: relative; opacity: 1 !important; pointer-events: all; display: block !important; padding: 1.5rem; page-break-after: always; }
     }
   </style>
 </head>
 <body>
 
+<div id="app">
+
   <!-- ============================================================
        SIDEBAR NAVIGATION
-       To add a new section: copy a <li> and update href + label.
+       Buttons call showPage(index) to switch visible page.
+       To add a section: add a <li> here AND a .page div below,
+       keeping the order identical.
        ============================================================ -->
   <nav aria-label="Sections">
     <div class="nav-logo">
       <span class="nav-raccoon">🦝</span>
       Raccoon Play<br>Dramaturgy Packet
     </div>
-    <ul>
-      <li><a href="#how-to-use">How to Use</a></li>
-      <li><a href="#introduction">Introduction</a></li>
-      <li><a href="#big-questions">Big Questions</a></li>
-      <li><a href="#networked-topics">Networked Topics</a></li>
-      <li><a href="#raccoon-culture">Raccoon Culture</a></li>
-      <li><a href="#reference-docs">Further Reading</a></li>
-      <li><a href="#visual-library">Visual Library</a></li>
-      <li><a href="#character-pipeline">Character Pipeline</a></li>
+    <ul id="nav-list">
+      <li><button onclick="showPage(0)">How to Use</button></li>
+      <li><button onclick="showPage(1)">Introduction</button></li>
+      <li><button onclick="showPage(2)">Big Questions</button></li>
+      <li><button onclick="showPage(3)">Networked Topics</button></li>
+      <li><button onclick="showPage(4)">Raccoon Culture</button></li>
+      <li><button onclick="showPage(5)">Further Reading</button></li>
+      <li><button onclick="showPage(6)">Visual Library</button></li>
+      <li><button onclick="showPage(7)">Character Pipeline</button></li>
       <!--
-        ADD NEW SECTION LINK:
-        <li><a href="#your-section-id">Section Title</a></li>
+        ADD NEW SECTION NAV LINK:
+        <li><button onclick="showPage(8)">New Section</button></li>
+        (index must match position of the new .page div below)
       -->
     </ul>
   </nav>
 
-  <main>
-
-    <!-- HERO ===================================================== -->
-    <header class="site-hero">
-      <div class="hero-rule"></div>
-      <div class="hero-kicker">Dramaturgy Packet</div>
-      <h1>Raccoon Play</h1><!-- PLACEHOLDER: Update title if needed -->
-      <p class="hero-tagline">
-        <!-- PLACEHOLDER: Add tagline or brief description of the production -->
-        [Tagline or brief production description goes here.]
-      </p>
-    </header>
+  <!-- ============================================================
+       CONTENT AREA — all pages live here, one visible at a time
+       ============================================================ -->
+  <div id="content">
 
     <!-- ============================================================
-         01 / HOW TO USE THIS PACKET
+         PAGE 0: HOW TO USE / DRAMATURG'S NOTE
          ============================================================ -->
-    <section class="section" id="how-to-use">
-      <div class="section-eyebrow">
-        <span class="section-num">01</span>
-        <span class="section-rule"></span>
-        <span class="section-tag">How to Use This Packet</span>
+    <div class="page" id="page-0">
+      <div class="page-eyebrow">
+        <span class="page-num">01</span>
+        <span class="page-rule"></span>
+        <span class="page-tag">How to Use This Packet</span>
       </div>
-      <h2>Dramaturg's Note</h2>
+      <h2 class="page-heading">Dramaturg's Note</h2>
 
       <div class="placeholder">
         <span class="ph-label">✦ Dramaturg's Note</span>
@@ -686,21 +647,29 @@
 
       <div class="placeholder">
         <span class="ph-label">✦ How to Navigate This Site</span>
-        Describe the structure: the sidebar, the interactive network graph,
-        the clickable nodes, and the character pipeline worksheet.
+        Describe the structure: the sidebar navigates between distinct pages,
+        the Networked Topics page has an interactive graph where clicking a node
+        opens a panel with your research notes, and the Character Pipeline page
+        has a printable worksheet activity.
       </div>
-    </section>
+
+      <div class="page-nav">
+        <button class="page-nav-btn" disabled>← Previous</button>
+        <span class="page-nav-center">1 of 8</span>
+        <button class="page-nav-btn" onclick="showPage(1)">Introduction →</button>
+      </div>
+    </div>
 
     <!-- ============================================================
-         02 / INTRODUCTION / RESEARCH STARTER / AT A GLANCE
+         PAGE 1: INTRODUCTION / RESEARCH STARTER / AT A GLANCE
          ============================================================ -->
-    <section class="section" id="introduction">
-      <div class="section-eyebrow">
-        <span class="section-num">02</span>
-        <span class="section-rule"></span>
-        <span class="section-tag">Research Starter</span>
+    <div class="page" id="page-1">
+      <div class="page-eyebrow">
+        <span class="page-num">02</span>
+        <span class="page-rule"></span>
+        <span class="page-tag">Research Starter</span>
       </div>
-      <h2>Introduction &amp; At a Glance</h2>
+      <h2 class="page-heading">Introduction &amp; At a Glance</h2>
 
       <div class="placeholder">
         <span class="ph-label">✦ Research Introduction</span>
@@ -708,7 +677,7 @@
         areas you've explored. What should a company member understand before starting?
       </div>
 
-      <!-- At-a-glance quick facts — edit the <dd> values below -->
+      <!-- At-a-glance quick facts — edit the <dd> values -->
       <dl class="glance-row">
         <div class="glance-item"><dt>Playwright</dt><dd>[Name]</dd></div>
         <div class="glance-item"><dt>Setting</dt><dd>[Place / Time]</dd></div>
@@ -718,18 +687,24 @@
         <div class="glance-item"><dt>Characters</dt><dd>[Number]</dd></div>
         <!-- ADD MORE: duplicate a .glance-item div -->
       </dl>
-    </section>
+
+      <div class="page-nav">
+        <button class="page-nav-btn" onclick="showPage(0)">← How to Use</button>
+        <span class="page-nav-center">2 of 8</span>
+        <button class="page-nav-btn" onclick="showPage(2)">Big Questions →</button>
+      </div>
+    </div>
 
     <!-- ============================================================
-         03 / BIG QUESTIONS AND THEMES
+         PAGE 2: BIG QUESTIONS AND THEMES
          ============================================================ -->
-    <section class="section" id="big-questions">
-      <div class="section-eyebrow">
-        <span class="section-num">03</span>
-        <span class="section-rule"></span>
-        <span class="section-tag">Themes</span>
+    <div class="page" id="page-2">
+      <div class="page-eyebrow">
+        <span class="page-num">03</span>
+        <span class="page-rule"></span>
+        <span class="page-tag">Themes</span>
       </div>
-      <h2>Big Questions and Themes</h2>
+      <h2 class="page-heading">Big Questions and Themes</h2>
 
       <div class="placeholder">
         <span class="ph-label">✦ Framing Note</span>
@@ -737,8 +712,7 @@
       </div>
 
       <!-- EDIT: Replace each <li> text with your real questions.
-           Add or remove <li> items as needed.
-           Update roman numerals to match. -->
+           Add or remove items as needed. Update roman numerals to match. -->
       <ul class="questions-list">
         <li><span class="q-index">i.</span><span>[Big Question #1 — replace with your question]</span></li>
         <li><span class="q-index">ii.</span><span>[Big Question #2 — replace with your question]</span></li>
@@ -746,44 +720,55 @@
         <li><span class="q-index">iv.</span><span>[Big Question #4 — replace with your question]</span></li>
         <li><span class="q-index">v.</span><span>[Big Question #5 — add more items as needed]</span></li>
       </ul>
-    </section>
+
+      <div class="page-nav">
+        <button class="page-nav-btn" onclick="showPage(1)">← Introduction</button>
+        <span class="page-nav-center">3 of 8</span>
+        <button class="page-nav-btn" onclick="showPage(3)">Networked Topics →</button>
+      </div>
+    </div>
 
     <!-- ============================================================
-         04 / NETWORKED TOPICS — INTERACTIVE GRAPH
+         PAGE 3: NETWORKED TOPICS — INTERACTIVE GRAPH
          The graph is built by D3.js. To add content to nodes,
          edit the `nodes` array in the <script> section below.
          Each node has: blurb, quotes[], resources[].
          ============================================================ -->
-    <section class="section" id="networked-topics">
-      <div class="section-eyebrow">
-        <span class="section-num">04</span>
-        <span class="section-rule"></span>
-        <span class="section-tag">Research Map</span>
+    <div class="page" id="page-3">
+      <div class="page-eyebrow">
+        <span class="page-num">04</span>
+        <span class="page-rule"></span>
+        <span class="page-tag">Research Map</span>
       </div>
-      <h2>Networked Topics in This Play</h2>
+      <h2 class="page-heading">Networked Topics in This Play</h2>
 
-      <p class="prose">
-        Click any node to read our research notes, pulled quotes, and further resources.
-        Drag nodes to rearrange the map. Scroll to zoom.
-        Darker nodes are the primary conceptual anchors.
+      <p class="prose" style="margin-bottom:0;">
+        Click any node to open our research notes, quotes, and resources on that topic.
+        Drag to rearrange. Scroll to zoom. Darker nodes are primary anchors.
       </p>
 
-      <!-- D3 renders the SVG graph inside this container -->
+      <!-- D3 renders the SVG graph inside this div -->
       <div id="network-graph-container">
         <div class="graph-hint">click a node to open &middot; drag to rearrange &middot; scroll to zoom</div>
       </div>
-    </section>
+
+      <div class="page-nav">
+        <button class="page-nav-btn" onclick="showPage(2)">← Big Questions</button>
+        <span class="page-nav-center">4 of 8</span>
+        <button class="page-nav-btn" onclick="showPage(4)">Raccoon Culture →</button>
+      </div>
+    </div>
 
     <!-- ============================================================
-         05 / RACCOON CULTURE
+         PAGE 4: RACCOON CULTURE
          ============================================================ -->
-    <section class="section" id="raccoon-culture">
-      <div class="section-eyebrow">
-        <span class="section-num">05</span>
-        <span class="section-rule"></span>
-        <span class="section-tag">World of the Play</span>
+    <div class="page" id="page-4">
+      <div class="page-eyebrow">
+        <span class="page-num">05</span>
+        <span class="page-rule"></span>
+        <span class="page-tag">World of the Play</span>
       </div>
-      <h2>Raccoon Culture</h2>
+      <h2 class="page-heading">Raccoon Culture</h2>
 
       <div class="placeholder">
         <span class="ph-label">✦ Framing Note</span>
@@ -818,18 +803,24 @@
         </div>
       </div>
       <!-- ADD MORE: duplicate a .raccoon-topic div above -->
-    </section>
+
+      <div class="page-nav">
+        <button class="page-nav-btn" onclick="showPage(3)">← Networked Topics</button>
+        <span class="page-nav-center">5 of 8</span>
+        <button class="page-nav-btn" onclick="showPage(5)">Further Reading →</button>
+      </div>
+    </div>
 
     <!-- ============================================================
-         06 / REFERENCE DOCUMENTS / FURTHER READING
+         PAGE 5: REFERENCE DOCUMENTS / FURTHER READING
          ============================================================ -->
-    <section class="section" id="reference-docs">
-      <div class="section-eyebrow">
-        <span class="section-num">06</span>
-        <span class="section-rule"></span>
-        <span class="section-tag">Bibliography</span>
+    <div class="page" id="page-5">
+      <div class="page-eyebrow">
+        <span class="page-num">06</span>
+        <span class="page-rule"></span>
+        <span class="page-tag">Bibliography</span>
       </div>
-      <h2>Reference Documents &amp; Further Reading</h2>
+      <h2 class="page-heading">Reference Documents &amp; Further Reading</h2>
 
       <div class="placeholder">
         <span class="ph-label">✦ Curatorial Note</span>
@@ -838,8 +829,8 @@
       </div>
 
       <!-- EDIT: Each .reference-entry is one item.
-           Change .ref-type-tag text to: Book, Article, Video, Podcast, Website, etc.
-           Wrap .ref-title in an <a href="..."> tag to add a hyperlink.
+           Change .ref-type-tag to: Book, Article, Video, Podcast, Website, etc.
+           Wrap .ref-title in <a href="..."> to add a hyperlink.
            ADD MORE: duplicate a .reference-entry div. -->
       <div class="reference-entry">
         <span class="ref-type-tag">Book</span>
@@ -872,18 +863,24 @@
           <div class="ref-meta">[Host] &middot; [Brief note on relevance]</div>
         </div>
       </div>
-    </section>
+
+      <div class="page-nav">
+        <button class="page-nav-btn" onclick="showPage(4)">← Raccoon Culture</button>
+        <span class="page-nav-center">6 of 8</span>
+        <button class="page-nav-btn" onclick="showPage(6)">Visual Library →</button>
+      </div>
+    </div>
 
     <!-- ============================================================
-         07 / VISUAL LIBRARY
+         PAGE 6: VISUAL LIBRARY
          ============================================================ -->
-    <section class="section" id="visual-library">
-      <div class="section-eyebrow">
-        <span class="section-num">07</span>
-        <span class="section-rule"></span>
-        <span class="section-tag">Images &amp; Media</span>
+    <div class="page" id="page-6">
+      <div class="page-eyebrow">
+        <span class="page-num">07</span>
+        <span class="page-rule"></span>
+        <span class="page-tag">Images &amp; Media</span>
       </div>
-      <h2>Visual Library</h2>
+      <h2 class="page-heading">Visual Library</h2>
 
       <div class="placeholder">
         <span class="ph-label">✦ Curatorial Note</span>
@@ -891,9 +888,8 @@
         What was your eye drawn to, and what do you want the company to feel or notice?
       </div>
 
-      <!-- EDIT: Replace .visual-slot divs with real <img> tags or iframes.
-           Example: <img src="images/filename.jpg" alt="description" style="width:100%;border-radius:2px;" />
-           You can also embed a Google Slides deck via <iframe> here.
+      <!-- EDIT: Replace each .visual-slot with a real <img> tag or <iframe>.
+           Example img: <img src="images/filename.jpg" alt="description" style="width:100%;border-radius:2px;" />
            ADD MORE: duplicate a .visual-slot div. -->
       <div class="visual-grid">
         <div class="visual-slot"><span class="slot-icon">🖼</span>Image 1<br>replace with &lt;img&gt;</div>
@@ -903,89 +899,83 @@
         <div class="visual-slot"><span class="slot-icon">🖼</span>Image 5<br>replace with &lt;img&gt;</div>
         <div class="visual-slot"><span class="slot-icon">＋</span>Add more images</div>
       </div>
-    </section>
+
+      <div class="page-nav">
+        <button class="page-nav-btn" onclick="showPage(5)">← Further Reading</button>
+        <span class="page-nav-center">7 of 8</span>
+        <button class="page-nav-btn" onclick="showPage(7)">Character Pipeline →</button>
+      </div>
+    </div>
 
     <!-- ============================================================
-         08 / CHARACTER PIPELINE ACTIVITY
+         PAGE 7: CHARACTER PIPELINE ACTIVITY
          ============================================================ -->
-    <section class="section" id="character-pipeline">
-      <div class="section-eyebrow">
-        <span class="section-num">08</span>
-        <span class="section-rule"></span>
-        <span class="section-tag">Actor Worksheet</span>
+    <div class="page" id="page-7">
+      <div class="page-eyebrow">
+        <span class="page-num">08</span>
+        <span class="page-rule"></span>
+        <span class="page-tag">Actor Worksheet</span>
       </div>
-      <h2>Character Pipeline Activity</h2>
+      <h2 class="page-heading">Character Pipeline Activity</h2>
 
       <button class="print-link" onclick="window.print()">↓ Print this worksheet</button>
 
       <!-- PLACEHOLDER: Edit the activity instructions below -->
       <p class="activity-intro">
         This activity invites you to trace how your character may have moved through
-        the pipeline of radicalization — the gradual steps, exposures, relationships,
-        and grievances that shaped who they are at the top of the play.
+        the radicalization cycle — the back-and-forth process of normalization,
+        acclimation, and dehumanization that shaped who they are at the top of the play.
         There are no right answers. Use the dramaturg's suggestion as a starting point,
         then trust your own instincts. Fill this out digitally or print it.
       </p>
 
-      <!-- ============================================================
-           PIPELINE MODEL — Normalization / Acclimation / Dehumanization
-           This is a cycle diagram, not a linear strip, because the
-           model describes a back-and-forth recursive process.
-           The CSS below draws three labeled arcs in a triangle shape.
-           ============================================================ -->
-      <div class="pipeline-model">
-        <div class="section-tag" style="margin-bottom:1.25rem;">The Pipeline — How It Works</div>
+      <!-- ---- PIPELINE MODEL: cycle diagram + stage descriptions ---- -->
+      <div class="pipeline-layout">
 
-        <!-- SVG cycle diagram: three stages in a looping triangle -->
-        <!-- The arrows suggest movement in both directions — this is intentional. -->
-        <div class="cycle-diagram-wrap">
-          <svg class="cycle-diagram" viewBox="0 0 320 280" xmlns="http://www.w3.org/2000/svg" aria-label="Radicalization cycle: Normalization, Acclimation, Dehumanization">
+        <!-- Left: SVG cycle diagram -->
+        <div>
+          <div class="page-tag" style="margin-bottom:1rem;">The Cycle — Visual Reference</div>
+          <div class="cycle-diagram-wrap">
+            <svg class="cycle-diagram" viewBox="0 0 300 270" xmlns="http://www.w3.org/2000/svg"
+                 aria-label="Radicalization cycle: Normalization, Acclimation, Dehumanization">
 
-            <!-- ---- connecting arc lines ---- -->
-            <!-- N → A -->
-            <path d="M 100 68 Q 160 30 220 68" fill="none" stroke="#c8beae" stroke-width="1.5" marker-end="url(#arr)"/>
-            <!-- A → D -->
-            <path d="M 248 105 Q 270 165 230 210" fill="none" stroke="#c8beae" stroke-width="1.5" marker-end="url(#arr)"/>
-            <!-- D → N -->
-            <path d="M 100 215 Q 50 165 80 105" fill="none" stroke="#c8beae" stroke-width="1.5" marker-end="url(#arr)"/>
-            <!-- reverse arrows (lighter) to show back-and-forth -->
-            <path d="M 210 78 Q 160 42 110 78" fill="none" stroke="#c8beae" stroke-width="0.8" stroke-dasharray="4 3" marker-end="url(#arr-light)"/>
-            <path d="M 224 200 Q 262 155 244 112" fill="none" stroke="#c8beae" stroke-width="0.8" stroke-dasharray="4 3" marker-end="url(#arr-light)"/>
-            <path d="M 88 112 Q 58 158 95 202" fill="none" stroke="#c8beae" stroke-width="0.8" stroke-dasharray="4 3" marker-end="url(#arr-light)"/>
+              <!-- Connecting arcs (solid — primary direction) -->
+              <path d="M 92 65 Q 150 28 208 65"   fill="none" stroke="#c8beae" stroke-width="1.5" marker-end="url(#arr)"/>
+              <path d="M 234 102 Q 256 158 218 202" fill="none" stroke="#c8beae" stroke-width="1.5" marker-end="url(#arr)"/>
+              <path d="M 92 206 Q 48 158 74 106"   fill="none" stroke="#c8beae" stroke-width="1.5" marker-end="url(#arr)"/>
 
-            <!-- arrowhead markers -->
-            <defs>
-              <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                <path d="M0,0 L0,6 L6,3 z" fill="#8a9e7a"/>
-              </marker>
-              <marker id="arr-light" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                <path d="M0,0 L0,6 L6,3 z" fill="#c8beae"/>
-              </marker>
-            </defs>
+              <!-- Reverse arcs (dashed — back-and-forth) -->
+              <path d="M 198 74 Q 150 40 102 74"    fill="none" stroke="#c8beae" stroke-width="0.8" stroke-dasharray="4 3" marker-end="url(#arr-light)"/>
+              <path d="M 212 194 Q 250 148 238 110" fill="none" stroke="#c8beae" stroke-width="0.8" stroke-dasharray="4 3" marker-end="url(#arr-light)"/>
+              <path d="M 80 112 Q 52 160 82 198"   fill="none" stroke="#c8beae" stroke-width="0.8" stroke-dasharray="4 3" marker-end="url(#arr-light)"/>
 
-            <!-- ---- stage nodes ---- -->
-            <!-- Normalization — top left -->
-            <circle cx="88" cy="88" r="48" fill="#2e2318" stroke="#f2ece0" stroke-width="2"/>
-            <text x="88" y="82" text-anchor="middle" fill="#f2ece0" font-family="'Lora', serif" font-size="11" font-style="italic">Normali-</text>
-            <text x="88" y="97" text-anchor="middle" fill="#f2ece0" font-family="'Lora', serif" font-size="11" font-style="italic">zation</text>
+              <defs>
+                <marker id="arr"       markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8a9e7a"/></marker>
+                <marker id="arr-light" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#c8beae"/></marker>
+              </defs>
 
-            <!-- Acclimation — top right -->
-            <circle cx="232" cy="88" r="48" fill="#4a6741" stroke="#f2ece0" stroke-width="2"/>
-            <text x="232" y="82" text-anchor="middle" fill="#f2ece0" font-family="'Lora', serif" font-size="11" font-style="italic">Acclim-</text>
-            <text x="232" y="97" text-anchor="middle" fill="#f2ece0" font-family="'Lora', serif" font-size="11" font-style="italic">ation</text>
+              <!-- Normalization node — top left, soil/dark -->
+              <circle cx="82"  cy="84"  r="44" fill="#2e2318" stroke="#f2ece0" stroke-width="2"/>
+              <text x="82"  y="78"  text-anchor="middle" fill="#f2ece0" font-family="'Lora',serif" font-size="10" font-style="italic">Normali-</text>
+              <text x="82"  y="93"  text-anchor="middle" fill="#f2ece0" font-family="'Lora',serif" font-size="10" font-style="italic">zation</text>
 
-            <!-- Dehumanization — bottom center -->
-            <circle cx="160" cy="210" r="48" fill="#9e6a47" stroke="#f2ece0" stroke-width="2"/>
-            <text x="160" y="204" text-anchor="middle" fill="#f2ece0" font-family="'Lora', serif" font-size="10" font-style="italic">Dehuman-</text>
-            <text x="160" y="219" text-anchor="middle" fill="#f2ece0" font-family="'Lora', serif" font-size="10" font-style="italic">ization</text>
+              <!-- Acclimation node — top right, moss/green -->
+              <circle cx="220" cy="84"  r="44" fill="#4a6741" stroke="#f2ece0" stroke-width="2"/>
+              <text x="220" y="78"  text-anchor="middle" fill="#f2ece0" font-family="'Lora',serif" font-size="10" font-style="italic">Acclim-</text>
+              <text x="220" y="93"  text-anchor="middle" fill="#f2ece0" font-family="'Lora',serif" font-size="10" font-style="italic">ation</text>
 
-            <!-- center label -->
-            <text x="160" y="147" text-anchor="middle" fill="#8a9e7a" font-family="'Lora', serif" font-size="8.5" letter-spacing="0.08em">back &amp; forth</text>
-          </svg>
+              <!-- Dehumanization node — bottom center, clay/terracotta -->
+              <circle cx="150" cy="202" r="44" fill="#9e6a47" stroke="#f2ece0" stroke-width="2"/>
+              <text x="150" y="196" text-anchor="middle" fill="#f2ece0" font-family="'Lora',serif" font-size="9.5" font-style="italic">Dehuman-</text>
+              <text x="150" y="211" text-anchor="middle" fill="#f2ece0" font-family="'Lora',serif" font-size="9.5" font-style="italic">ization</text>
+
+              <!-- Center label -->
+              <text x="150" y="144" text-anchor="middle" fill="#8a9e7a" font-family="'Lora',serif" font-size="8" letter-spacing="0.08em">back &amp; forth</text>
+            </svg>
+          </div>
         </div>
 
-        <!-- Stage descriptions — the real content of the model -->
-        <!-- PLACEHOLDER: Each description is ready for you to expand with your own framing. -->
+        <!-- Right: stage descriptions -->
         <div class="pipeline-stage-descriptions">
 
           <div class="stage-desc">
@@ -993,15 +983,12 @@
               <span class="stage-swatch" style="background:var(--soil);"></span>
               <h4>Normalization</h4>
             </div>
-            <p>
-              The process by which extreme ideas, rhetoric, or behaviors are made to seem
-              ordinary, expected, or even inevitable. Exposure to a fringe idea is repeated
-              until it no longer registers as alarming — it becomes the wallpaper.
-            </p>
-            <div class="placeholder" style="margin-top:0.75rem;">
+            <p>Extreme ideas, rhetoric, or behaviors are made to seem ordinary or inevitable.
+               Repeated exposure to a fringe idea until it no longer registers as alarming —
+               it becomes the wallpaper.</p>
+            <div class="placeholder" style="margin-top:0.6rem; max-width:100%;">
               <span class="ph-label">✦ Your framing</span>
-              Add your specific notes on how normalization functions in this play —
-              which ideas get normalized, through what mechanisms, by whom, and for whom.
+              How does normalization function in this play — which ideas, through what mechanisms, for whom?
             </div>
           </div>
 
@@ -1010,16 +997,12 @@
               <span class="stage-swatch" style="background:var(--moss);"></span>
               <h4>Acclimation</h4>
             </div>
-            <p>
-              Where normalization is passive exposure, acclimation is active adjustment.
-              A character begins to orient themselves around the normalized idea — their
-              relationships, identity, and sense of self start to reorganize in response.
-              They are not yet committed, but they are becoming comfortable.
-            </p>
-            <div class="placeholder" style="margin-top:0.75rem;">
+            <p>Where normalization is passive exposure, acclimation is active adjustment.
+               A character begins to orient their identity and relationships around the normalized idea.
+               Not yet committed — but becoming comfortable.</p>
+            <div class="placeholder" style="margin-top:0.6rem; max-width:100%;">
               <span class="ph-label">✦ Your framing</span>
-              Add your notes on acclimation in this play — what does it look like when
-              a character starts to settle into a worldview? What do they gain? What do they give up?
+              What does it look like when a character settles into a worldview? What do they gain, give up?
             </div>
           </div>
 
@@ -1028,53 +1011,37 @@
               <span class="stage-swatch" style="background:var(--clay);"></span>
               <h4>Dehumanization</h4>
             </div>
-            <p>
-              The endpoint — and the fuel for the next cycle. Once a character has
-              dehumanized a target (or themselves), that act makes the next round
-              of normalization easier. Dehumanization is not a finish line; it loops
-              back, deepening the process for everyone caught inside it.
-            </p>
-            <div class="placeholder" style="margin-top:0.75rem;">
+            <p>The endpoint — and the fuel for the next cycle. Once a character has dehumanized a target
+               (or themselves), that act makes the next round of normalization easier.
+               It loops back; it doesn't end.</p>
+            <div class="placeholder" style="margin-top:0.6rem; max-width:100%;">
               <span class="ph-label">✦ Your framing</span>
-              Add your notes on how dehumanization manifests in this play — in language,
-              in action, in the characters' relationships to each other and to themselves.
+              How does dehumanization manifest in this play — in language, action, relationship?
             </div>
           </div>
 
-          <div class="stage-desc" style="border-left-color: var(--fog);">
+          <div class="stage-desc" style="border-left-color:var(--fog);">
             <div class="stage-desc-header">
               <span class="stage-swatch" style="background:var(--fog);"></span>
               <h4>The Loop</h4>
             </div>
-            <p>
-              These three stages are not a straight line. They feed each other — each
-              cycle of normalization makes acclimation faster, each round of acclimation
-              makes dehumanization feel more justified, and each act of dehumanization
-              becomes the new baseline to normalize. The pipeline is recursive.
-            </p>
-            <div class="placeholder" style="margin-top:0.75rem;">
+            <p>These stages feed each other recursively. Each cycle of normalization makes acclimation faster;
+               each act of dehumanization becomes the new baseline to normalize.
+               The pipeline is not a line — it's a spiral.</p>
+            <div class="placeholder" style="margin-top:0.6rem; max-width:100%;">
               <span class="ph-label">✦ Your framing</span>
-              How does the recursive quality of this pipeline show up in the structure
-              of the play itself? In its dramaturgy, its comedy, its politics?
+              How does this recursive quality show up in the structure of the play itself?
             </div>
           </div>
 
-        </div><!-- end .pipeline-stage-descriptions -->
-      </div><!-- end .pipeline-model -->
+        </div>
+      </div><!-- end .pipeline-layout -->
 
-      <!-- CHARACTER ENTRIES
-           Each .character-entry is one character accordion.
-           Click the heading to expand the worksheet.
-
-           EDIT:
-           - Replace [Character Name N] and [Brief role description]
-           - Replace the dramaturg-note-inline placeholder text
-           - Add or customize worksheet questions
-
-           ADD A CHARACTER:
-           - Duplicate an entire .character-entry block
-           - Give it a new id (char-4, char-5, etc.)
-           - Update onclick="toggleChar('char-N')" to match
+      <!-- ---- CHARACTER ENTRIES ----
+           Each .character-entry is one accordion.
+           EDIT: Replace name, role, and dramaturg note.
+           ADD A CHARACTER: duplicate an entire .character-entry block,
+           give it a new id (char-4, etc.), update onclick to match.
       -->
 
       <div class="character-entry" id="char-1">
@@ -1088,15 +1055,15 @@
         <div class="character-body">
           <div class="dramaturg-note-inline">
             <strong>🦝 Dramaturg's Suggestion</strong>
-            [Your hypothesis about this character's pipeline journey. What was their entry point?
-            What vulnerability or grievance made them susceptible? What keeps them in?]
+            [Your hypothesis about this character's journey through the cycle. Where did they enter?
+            What vulnerability made them susceptible? What stage are they in by the top of the play?]
           </div>
           <div class="worksheet">
-            <div><label class="field-label">Where do you think your character entered the pipeline?</label><input class="fill-line" type="text" placeholder="Your answer..." /></div>
+            <div><label class="field-label">Where do you think your character entered the cycle?</label><input class="fill-line" type="text" placeholder="Your answer..." /></div>
             <div><label class="field-label">What was your character's core grievance or unmet need?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
             <div><label class="field-label">Where in the cycle are they at the start of the play — normalization, acclimation, or dehumanization?</label><input class="fill-line" type="text" placeholder="e.g. deep in acclimation, beginning to dehumanize..." /></div>
-            <div><label class="field-label">Who or what was the most influential force in pulling them through the cycle?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <div><label class="field-label">Is there a moment in the play where they cycle back — where something they've normalized becomes strange again? Where?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Who or what was the most influential force pulling them through the cycle?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Is there a moment in the play where they cycle back — where something normalized becomes strange again?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
             <div><label class="field-label">Is there anything that could interrupt the cycle for them? What would it take?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
             <!-- ADD MORE QUESTIONS: duplicate a <div> block above -->
           </div>
@@ -1114,14 +1081,14 @@
         <div class="character-body">
           <div class="dramaturg-note-inline">
             <strong>🦝 Dramaturg's Suggestion</strong>
-            [Your notes on this character's pipeline journey.]
+            [Your notes on this character's journey through the cycle.]
           </div>
           <div class="worksheet">
             <div><label class="field-label">Where do you think your character entered the cycle?</label><input class="fill-line" type="text" placeholder="Your answer..." /></div>
             <div><label class="field-label">What was your character's core grievance or unmet need?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
             <div><label class="field-label">Where in the cycle are they at the start of the play — normalization, acclimation, or dehumanization?</label><input class="fill-line" type="text" placeholder="e.g. deep in acclimation, beginning to dehumanize..." /></div>
-            <div><label class="field-label">Who or what was the most influential force in pulling them through the cycle?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <div><label class="field-label">Is there a moment in the play where they cycle back — where something they've normalized becomes strange again? Where?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Who or what was the most influential force pulling them through the cycle?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Is there a moment in the play where they cycle back — where something normalized becomes strange again?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
             <div><label class="field-label">Is there anything that could interrupt the cycle for them? What would it take?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
           </div>
         </div>
@@ -1138,21 +1105,21 @@
         <div class="character-body">
           <div class="dramaturg-note-inline">
             <strong>🦝 Dramaturg's Suggestion</strong>
-            [Your notes on this character's pipeline journey.]
+            [Your notes on this character's journey through the cycle.]
           </div>
           <div class="worksheet">
             <div><label class="field-label">Where do you think your character entered the cycle?</label><input class="fill-line" type="text" placeholder="Your answer..." /></div>
             <div><label class="field-label">What was your character's core grievance or unmet need?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
             <div><label class="field-label">Where in the cycle are they at the start of the play — normalization, acclimation, or dehumanization?</label><input class="fill-line" type="text" placeholder="e.g. deep in acclimation, beginning to dehumanize..." /></div>
-            <div><label class="field-label">Who or what was the most influential force in pulling them through the cycle?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <div><label class="field-label">Is there a moment in the play where they cycle back — where something they've normalized becomes strange again? Where?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Who or what was the most influential force pulling them through the cycle?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Is there a moment in the play where they cycle back — where something normalized becomes strange again?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
             <div><label class="field-label">Is there anything that could interrupt the cycle for them? What would it take?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
           </div>
         </div>
       </div>
 
       <!--
-        ADD A NEW CHARACTER — copy this block, change id and onclick:
+        ADD A NEW CHARACTER — copy this block:
 
         <div class="character-entry" id="char-4">
           <button class="character-toggle" onclick="toggleChar('char-4')">
@@ -1168,328 +1135,347 @@
               [Your notes.]
             </div>
             <div class="worksheet">
-              ... (copy questions from above)
+              (copy the question <div> blocks from above)
             </div>
           </div>
         </div>
       -->
-    </section>
+
+      <div class="page-nav">
+        <button class="page-nav-btn" onclick="showPage(6)">← Visual Library</button>
+        <span class="page-nav-center">8 of 8</span>
+        <button class="page-nav-btn" disabled>Next →</button>
+      </div>
+    </div><!-- end page-7 -->
 
     <!--
       ============================================================
-      ADD A NEW SECTION — copy this template:
+      ADD A NEW PAGE — copy this template:
 
-      <section class="section" id="your-section-id">
-        <div class="section-eyebrow">
-          <span class="section-num">09</span>
-          <span class="section-rule"></span>
-          <span class="section-tag">Section Tag</span>
+      <div class="page" id="page-8">
+        <div class="page-eyebrow">
+          <span class="page-num">09</span>
+          <span class="page-rule"></span>
+          <span class="page-tag">Section Tag</span>
         </div>
-        <h2>Section Heading</h2>
+        <h2 class="page-heading">Section Heading</h2>
         <div class="placeholder">
           <span class="ph-label">✦ Placeholder</span>
           Your content goes here.
         </div>
-      </section>
+        <div class="page-nav">
+          <button class="page-nav-btn" onclick="showPage(7)">← Character Pipeline</button>
+          <span class="page-nav-center">9 of 9</span>
+          <button class="page-nav-btn" disabled>Next →</button>
+        </div>
+      </div>
 
       Then add to nav:
-      <li><a href="#your-section-id">Section Title</a></li>
+      <li><button onclick="showPage(8)">New Section</button></li>
+
+      And update the previous page's "Next →" button to point here:
+      showPage(8)
       ============================================================
     -->
 
-  </main>
+  </div><!-- end #content -->
 
-  <!-- ============================================================
-       NODE DETAIL PANEL
-       Slides in when a graph node is clicked.
-       Populated dynamically by openPanel() in the script below.
-       ============================================================ -->
-  <div id="node-panel" role="dialog" aria-modal="true" aria-labelledby="panel-title">
-    <div class="panel-top">
-      <div class="panel-top-meta">
-        <div>
-          <div class="panel-type-tag" id="panel-type-tag">Topic</div>
-          <h3 id="panel-title">—</h3>
-        </div>
-        <button class="panel-close" onclick="closePanel()" aria-label="Close panel">✕</button>
+</div><!-- end #app -->
+
+<!-- ============================================================
+     NODE DETAIL PANEL
+     Slides in from the right when a graph node is clicked.
+     Content populated dynamically by openPanel() below.
+     ============================================================ -->
+<div id="node-panel" role="dialog" aria-modal="true" aria-labelledby="panel-title">
+  <div class="panel-top">
+    <div class="panel-top-meta">
+      <div>
+        <div class="panel-type-tag" id="panel-type-tag">Topic</div>
+        <h3 id="panel-title">—</h3>
       </div>
-    </div>
-    <div class="panel-body">
-      <div class="panel-heading">Our Notes</div>
-      <div class="panel-blurb" id="panel-blurb"></div>
-      <div class="panel-heading">Pulled Quotes</div>
-      <div id="panel-quotes"></div>
-      <div class="panel-heading">Further Resources</div>
-      <div id="panel-resources"></div>
+      <button class="panel-close" onclick="closePanel()" aria-label="Close panel">✕</button>
     </div>
   </div>
+  <div class="panel-body">
+    <div class="panel-heading">Our Notes</div>
+    <div class="panel-blurb" id="panel-blurb"></div>
+    <div class="panel-heading">Pulled Quotes</div>
+    <div id="panel-quotes"></div>
+    <div class="panel-heading">Further Resources</div>
+    <div id="panel-resources"></div>
+  </div>
+</div>
 
-  <!-- ============================================================
-       JAVASCRIPT
-       ============================================================ -->
-  <script>
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
 
-    // =============================================================
-    // NODE DATA
-    // Edit each node's blurb, quotes, and resources to add content.
-    //
-    // FIELDS:
-    //   id        — unique key used in links array
-    //   label     — text shown on the graph node (\n = line break)
-    //   anchor    — true = larger anchor node (darker green)
-    //   blurb     — your research notes (plain text string)
-    //   quotes    — array of { text: "...", attribution: "— Source" }
-    //   resources — array of { label: "...", url: "https://...", type: "book"|"article"|"video"|"link" }
-    // =============================================================
-    const nodes = [
-      {
-        id: "emotion", label: "Emotion &\nPsychology", anchor: true,
-        blurb: "[PLACEHOLDER] Add your notes on Emotion and Psychology here. What aspects of emotional manipulation, psychological vulnerability, or affective politics are most relevant to this play?",
-        quotes: [
-          { text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" },
-          { text: "[PLACEHOLDER] Add another quote here.", attribution: "— Source, Title" }
-        ],
-        resources: [
-          { label: "[Resource 1 — e.g. Book or Article]", url: "#", type: "book" },
-          { label: "[Resource 2 — e.g. Video or Podcast]", url: "#", type: "video" }
-        ]
-      },
-      {
-        id: "algorithms", label: "Algorithms,\nInterface &\nthe Internet", anchor: true,
-        blurb: "[PLACEHOLDER] Add your notes on Algorithms, Interface, and the Internet. How do recommendation systems, platform design, and online ecosystems shape the world of this play?",
-        quotes: [
-          { text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" },
-          { text: "[PLACEHOLDER] Add another quote here.", attribution: "— Source, Title" }
-        ],
-        resources: [
-          { label: "[Resource 1]", url: "#", type: "link" },
-          { label: "[Resource 2]", url: "#", type: "video" }
-        ]
-      },
-      {
-        id: "conspiracy", label: "Conspiracy\nThinking", anchor: false,
-        blurb: "[PLACEHOLDER] Add your notes on Conspiracy Thinking. How does conspiratorial logic function? What makes it seductive? How does it appear in this play?",
-        quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
-        resources: [{ label: "[Resource 1]", url: "#", type: "book" }]
-      },
-      {
-        id: "queer", label: "Queer\nStudies", anchor: false,
-        blurb: "[PLACEHOLDER] Add your notes on Queer Studies. What queer theory, history, or politics are relevant to this production?",
-        quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
-        resources: [{ label: "[Resource 1]", url: "#", type: "book" }]
-      },
-      {
-        id: "fragmentation", label: "Fragmentation &\nInternal Conflict", anchor: false,
-        blurb: "[PLACEHOLDER] Add your notes on Fragmentation and Internal Conflict. How does this manifest in the characters, communities, or movements in the play?",
-        quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
-        resources: [{ label: "[Resource 1]", url: "#", type: "link" }]
-      },
-      {
-        id: "humor", label: "Humor, Memes\n& Tone", anchor: false,
-        blurb: "[PLACEHOLDER] Add your notes on Humor, Memes, and Tone. How do meme culture, irony, and comedic register function politically in this play and in the world it depicts?",
-        quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
-        resources: [{ label: "[Resource 1]", url: "#", type: "video" }]
-      },
-      {
-        id: "radicalization", label: "Radicalization", anchor: false,
-        blurb: "[PLACEHOLDER] Add your notes on Radicalization. What models or frameworks are you drawing on? How does the pipeline function in this play?",
-        quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
-        resources: [{ label: "[Resource 1]", url: "#", type: "book" }]
-      },
-      {
-        id: "complicity", label: "Complicity &\nEthics", anchor: false,
-        blurb: "[PLACEHOLDER] Add your notes on Complicity and Ethics. What ethical questions does the play raise? Who is complicit, and how does it implicate its audience?",
-        quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
-        resources: [{ label: "[Resource 1]", url: "#", type: "link" }]
-      },
-      {
-        id: "class", label: "Class &\nPoverty", anchor: false,
-        blurb: "[PLACEHOLDER] Add your notes on Class and Poverty. How do economic precarity, class resentment, and material conditions shape the characters' political trajectories?",
-        quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
-        resources: [{ label: "[Resource 1]", url: "#", type: "book" }]
-      }
-    ];
+  // =============================================================
+  // PAGE NAVIGATION
+  // showPage(index) hides all pages, shows the one at `index`,
+  // and updates the sidebar active state.
+  // =============================================================
 
-    // =============================================================
-    // GRAPH LINKS — all confirmed connections.
-    // Add { source: "id", target: "id" } to add a new connection.
-    // Remove a line to remove a connection.
-    // =============================================================
-    const links = [
-      // Anchor: Emotion and Psychology
-      { source: "emotion", target: "class" },
-      { source: "emotion", target: "complicity" },
-      { source: "emotion", target: "fragmentation" },
-      { source: "emotion", target: "humor" },
-      { source: "emotion", target: "queer" },
-      { source: "emotion", target: "conspiracy" },
-      // Anchor: Algorithms, Interface, and the Internet
-      { source: "algorithms", target: "radicalization" },
-      { source: "algorithms", target: "queer" },
-      { source: "algorithms", target: "conspiracy" },
-      { source: "algorithms", target: "fragmentation" },
-      { source: "algorithms", target: "humor" },
-      { source: "algorithms", target: "complicity" },
-      // Radicalization
-      { source: "radicalization", target: "conspiracy" },
-      { source: "radicalization", target: "class" },
-      { source: "radicalization", target: "complicity" },
-      { source: "radicalization", target: "humor" },
-      // Conspiracy
-      { source: "conspiracy", target: "complicity" },
-      { source: "conspiracy", target: "fragmentation" },
-      { source: "conspiracy", target: "humor" },
-      // Confirmed additional connections
-      { source: "queer", target: "fragmentation" },
-      { source: "class", target: "complicity" }
-    ];
+  const TOTAL_PAGES = 8; // update this if you add more pages
 
-    // =============================================================
-    // D3 FORCE-DIRECTED GRAPH
-    // Renders the network. Edit color constants to tweak appearance.
-    // You shouldn't need to change the simulation logic below.
-    // =============================================================
-    (function buildGraph() {
-      const container = document.getElementById('network-graph-container');
-      const W = container.clientWidth;
-      const H = container.clientHeight;
-
-      // Node colors — matches CSS palette above
-      const ANCHOR_FILL  = '#4a6741';   // --moss
-      const REGULAR_FILL = '#2e2318';   // --soil
-      const HOVER_FILL   = '#9e6a47';   // --clay
-      const ANCHOR_R     = 46;          // radius of anchor nodes
-      const REGULAR_R    = 34;          // radius of regular nodes
-
-      const svg = d3.select('#network-graph-container')
-        .append('svg')
-        .attr('width', W).attr('height', H)
-        .attr('aria-hidden', 'true');
-
-      // Zoom/pan container
-      const g = svg.append('g');
-      svg.call(d3.zoom().scaleExtent([0.35, 2.8]).on('zoom', e => g.attr('transform', e.transform)));
-
-      // Link lines
-      const link = g.append('g')
-        .selectAll('line').data(links).join('line')
-        .attr('stroke', '#c8beae').attr('stroke-width', 1.5).attr('stroke-opacity', 0.7);
-
-      // Node groups
-      const node = g.append('g')
-        .selectAll('g').data(nodes).join('g')
-        .attr('cursor', 'pointer')
-        .call(d3.drag()
-          .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
-          .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
-          .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
-        )
-        .on('click', (event, d) => { event.stopPropagation(); openPanel(d); });
-
-      // Circles
-      node.append('circle')
-        .attr('r', d => d.anchor ? ANCHOR_R : REGULAR_R)
-        .attr('fill', d => d.anchor ? ANCHOR_FILL : REGULAR_FILL)
-        .attr('stroke', '#f2ece0').attr('stroke-width', 2.5)
-        .on('mouseover', function(e, d) { d3.select(this).transition().duration(120).attr('fill', HOVER_FILL); })
-        .on('mouseout',  function(e, d) { d3.select(this).transition().duration(120).attr('fill', d.anchor ? ANCHOR_FILL : REGULAR_FILL); });
-
-      // Multiline labels via tspan
-      node.each(function(d) {
-        const lines = d.label.split('\n');
-        const fontSize = d.anchor ? 10.5 : 9.5;
-        const lineH = fontSize + 2.5;
-        const totalH = lines.length * lineH;
-        const text = d3.select(this).append('text')
-          .attr('text-anchor', 'middle').attr('fill', '#f2ece0')
-          .attr('font-family', "'Lora', Georgia, serif").attr('font-size', fontSize)
-          .attr('pointer-events', 'none');
-        lines.forEach((line, i) => {
-          text.append('tspan').attr('x', 0)
-            .attr('dy', i === 0 ? -(totalH / 2) + fontSize : lineH)
-            .text(line);
-        });
-      });
-
-      // Force simulation
-      const sim = d3.forceSimulation(nodes)
-        .force('link',      d3.forceLink(links).id(d => d.id).distance(145))
-        .force('charge',    d3.forceManyBody().strength(-430))
-        .force('center',    d3.forceCenter(W / 2, H / 2))
-        .force('collision', d3.forceCollide(d => d.anchor ? ANCHOR_R + 20 : REGULAR_R + 16))
-        .on('tick', () => {
-          link
-            .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
-            .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
-          node.attr('transform', d => `translate(${d.x},${d.y})`);
-        });
-
-      // Clicking the graph background closes the panel
-      svg.on('click', closePanel);
-    })();
-
-    // =============================================================
-    // PANEL — open, populate, close
-    // =============================================================
-    function openPanel(d) {
-      const panel = document.getElementById('node-panel');
-
-      document.getElementById('panel-type-tag').textContent = d.anchor ? 'Anchor Topic' : 'Networked Topic';
-      document.getElementById('panel-title').textContent = d.label.replace(/\n/g, ' ');
-      document.getElementById('panel-blurb').textContent = d.blurb;
-
-      // Quotes
-      const qEl = document.getElementById('panel-quotes');
-      qEl.innerHTML = '';
-      (d.quotes || []).forEach(q => {
-        const div = document.createElement('div');
-        div.className = 'panel-quote';
-        div.innerHTML = `<p>${q.text}</p><span class="attr">${q.attribution}</span>`;
-        qEl.appendChild(div);
-      });
-      if (!d.quotes || !d.quotes.length)
-        qEl.innerHTML = '<em style="color:var(--lichen);font-size:0.85rem;">No quotes added yet.</em>';
-
-      // Resources
-      const rEl = document.getElementById('panel-resources');
-      rEl.innerHTML = '';
-      (d.resources || []).forEach(r => {
-        const a = document.createElement('a');
-        a.className = 'panel-resource-link';
-        a.href = r.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-        a.innerHTML = `<span class="resource-type-tag">${r.type}</span><span>${r.label}</span>`;
-        rEl.appendChild(a);
-      });
-      if (!d.resources || !d.resources.length)
-        rEl.innerHTML = '<em style="color:var(--lichen);font-size:0.85rem;">No resources added yet.</em>';
-
-      panel.classList.add('open');
+  function showPage(index) {
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    // Show the requested page
+    const target = document.getElementById('page-' + index);
+    if (target) {
+      target.classList.add('active');
+      target.scrollTop = 0; // scroll each page back to top on navigation
     }
+    // Update nav button active states
+    document.querySelectorAll('#nav-list button').forEach((btn, i) => {
+      btn.classList.toggle('active', i === index);
+    });
+    // Close node panel if open (e.g. navigating away from graph page)
+    closePanel();
+  }
 
-    function closePanel() { document.getElementById('node-panel').classList.remove('open'); }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+  // Show the first page on load
+  showPage(0);
 
-    // =============================================================
-    // CHARACTER ACCORDION — toggle open/closed on click
-    // =============================================================
-    function toggleChar(id) { document.getElementById(id).classList.toggle('open'); }
 
-    // =============================================================
-    // SCROLL SPY — highlights the current section in the nav sidebar
-    // =============================================================
-    document.querySelectorAll('.section').forEach(section => {
-      new IntersectionObserver(entries => {
-        entries.forEach(e => {
-          if (e.isIntersecting) {
-            const id = e.target.id;
-            document.querySelectorAll('nav ul li a').forEach(l =>
-              l.classList.toggle('active', l.getAttribute('href') === `#${id}`)
-            );
-          }
-        });
-      }, { threshold: 0.25 }).observe(section);
+  // =============================================================
+  // NODE DATA
+  // Edit each node's blurb, quotes, and resources to add content.
+  //
+  // FIELDS:
+  //   id        — unique key used in links array
+  //   label     — text shown on graph node (\n = line break)
+  //   anchor    — true = larger, darker anchor node
+  //   blurb     — your research notes (plain text string)
+  //   quotes    — array of { text: "...", attribution: "— Source" }
+  //   resources — array of { label: "...", url: "https://...", type: "book"|"article"|"video"|"link" }
+  // =============================================================
+  const nodes = [
+    {
+      id: "emotion", label: "Emotion &\nPsychology", anchor: true,
+      blurb: "[PLACEHOLDER] Add your notes on Emotion and Psychology here. What aspects of emotional manipulation, psychological vulnerability, or affective politics are most relevant to this play?",
+      quotes: [
+        { text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" },
+        { text: "[PLACEHOLDER] Add another quote here.", attribution: "— Source, Title" }
+      ],
+      resources: [
+        { label: "[Resource 1 — e.g. Book or Article]", url: "#", type: "book" },
+        { label: "[Resource 2 — e.g. Video or Podcast]", url: "#", type: "video" }
+      ]
+    },
+    {
+      id: "algorithms", label: "Algorithms,\nInterface &\nthe Internet", anchor: true,
+      blurb: "[PLACEHOLDER] Add your notes on Algorithms, Interface, and the Internet. How do recommendation systems, platform design, and online ecosystems shape the world of this play?",
+      quotes: [
+        { text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" },
+        { text: "[PLACEHOLDER] Add another quote here.", attribution: "— Source, Title" }
+      ],
+      resources: [
+        { label: "[Resource 1]", url: "#", type: "link" },
+        { label: "[Resource 2]", url: "#", type: "video" }
+      ]
+    },
+    {
+      id: "conspiracy", label: "Conspiracy\nThinking", anchor: false,
+      blurb: "[PLACEHOLDER] Add your notes on Conspiracy Thinking. How does conspiratorial logic function? What makes it seductive? How does it appear in this play?",
+      quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
+      resources: [{ label: "[Resource 1]", url: "#", type: "book" }]
+    },
+    {
+      id: "queer", label: "Queer\nStudies", anchor: false,
+      blurb: "[PLACEHOLDER] Add your notes on Queer Studies. What queer theory, history, or politics are relevant to this production?",
+      quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
+      resources: [{ label: "[Resource 1]", url: "#", type: "book" }]
+    },
+    {
+      id: "fragmentation", label: "Fragmentation &\nInternal Conflict", anchor: false,
+      blurb: "[PLACEHOLDER] Add your notes on Fragmentation and Internal Conflict. How does this manifest in the characters, communities, or movements in the play?",
+      quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
+      resources: [{ label: "[Resource 1]", url: "#", type: "link" }]
+    },
+    {
+      id: "humor", label: "Humor, Memes\n& Tone", anchor: false,
+      blurb: "[PLACEHOLDER] Add your notes on Humor, Memes, and Tone. How do meme culture, irony, and comedic register function politically in this play?",
+      quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
+      resources: [{ label: "[Resource 1]", url: "#", type: "video" }]
+    },
+    {
+      id: "radicalization", label: "Radicalization", anchor: false,
+      blurb: "[PLACEHOLDER] Add your notes on Radicalization. What models or frameworks are you drawing on? How does the cycle function in this play?",
+      quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
+      resources: [{ label: "[Resource 1]", url: "#", type: "book" }]
+    },
+    {
+      id: "complicity", label: "Complicity &\nEthics", anchor: false,
+      blurb: "[PLACEHOLDER] Add your notes on Complicity and Ethics. What ethical questions does the play raise? Who is complicit, and how does it implicate its audience?",
+      quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
+      resources: [{ label: "[Resource 1]", url: "#", type: "link" }]
+    },
+    {
+      id: "class", label: "Class &\nPoverty", anchor: false,
+      blurb: "[PLACEHOLDER] Add your notes on Class and Poverty. How do economic precarity, class resentment, and material conditions shape the characters' trajectories?",
+      quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
+      resources: [{ label: "[Resource 1]", url: "#", type: "book" }]
+    }
+  ];
+
+  // =============================================================
+  // GRAPH LINKS — all confirmed connections.
+  // Add { source: "id", target: "id" } to add a new connection.
+  // =============================================================
+  const links = [
+    // Anchor: Emotion and Psychology
+    { source: "emotion", target: "class" },
+    { source: "emotion", target: "complicity" },
+    { source: "emotion", target: "fragmentation" },
+    { source: "emotion", target: "humor" },
+    { source: "emotion", target: "queer" },
+    { source: "emotion", target: "conspiracy" },
+    // Anchor: Algorithms, Interface, and the Internet
+    { source: "algorithms", target: "radicalization" },
+    { source: "algorithms", target: "queer" },
+    { source: "algorithms", target: "conspiracy" },
+    { source: "algorithms", target: "fragmentation" },
+    { source: "algorithms", target: "humor" },
+    { source: "algorithms", target: "complicity" },
+    // Radicalization
+    { source: "radicalization", target: "conspiracy" },
+    { source: "radicalization", target: "class" },
+    { source: "radicalization", target: "complicity" },
+    { source: "radicalization", target: "humor" },
+    // Conspiracy
+    { source: "conspiracy", target: "complicity" },
+    { source: "conspiracy", target: "fragmentation" },
+    { source: "conspiracy", target: "humor" },
+    // Confirmed additional connections
+    { source: "queer", target: "fragmentation" },
+    { source: "class", target: "complicity" }
+  ];
+
+  // =============================================================
+  // D3 FORCE-DIRECTED GRAPH
+  // Builds after the DOM is ready. Edit color constants to
+  // tweak node appearance. Logic below generally doesn't need edits.
+  // =============================================================
+  (function buildGraph() {
+    // Wait until the graph container is in the DOM
+    const container = document.getElementById('network-graph-container');
+    const W = container.clientWidth  || 800;
+    const H = container.clientHeight || 480;
+
+    const ANCHOR_FILL  = '#4a6741';   // --moss
+    const REGULAR_FILL = '#2e2318';   // --soil
+    const HOVER_FILL   = '#9e6a47';   // --clay
+    const ANCHOR_R     = 46;
+    const REGULAR_R    = 34;
+
+    const svg = d3.select('#network-graph-container')
+      .append('svg')
+      .attr('width', W).attr('height', H)
+      .attr('aria-hidden', 'true');
+
+    const g = svg.append('g');
+    svg.call(d3.zoom().scaleExtent([0.35, 2.8]).on('zoom', e => g.attr('transform', e.transform)));
+
+    const link = g.append('g')
+      .selectAll('line').data(links).join('line')
+      .attr('stroke', '#c8beae').attr('stroke-width', 1.5).attr('stroke-opacity', 0.7);
+
+    const node = g.append('g')
+      .selectAll('g').data(nodes).join('g')
+      .attr('cursor', 'pointer')
+      .call(d3.drag()
+        .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+        .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
+        .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
+      )
+      .on('click', (event, d) => { event.stopPropagation(); openPanel(d); });
+
+    node.append('circle')
+      .attr('r', d => d.anchor ? ANCHOR_R : REGULAR_R)
+      .attr('fill', d => d.anchor ? ANCHOR_FILL : REGULAR_FILL)
+      .attr('stroke', '#f2ece0').attr('stroke-width', 2.5)
+      .on('mouseover', function(e, d) { d3.select(this).transition().duration(120).attr('fill', HOVER_FILL); })
+      .on('mouseout',  function(e, d) { d3.select(this).transition().duration(120).attr('fill', d.anchor ? ANCHOR_FILL : REGULAR_FILL); });
+
+    node.each(function(d) {
+      const lines    = d.label.split('\n');
+      const fontSize = d.anchor ? 10.5 : 9.5;
+      const lineH    = fontSize + 2.5;
+      const totalH   = lines.length * lineH;
+      const text = d3.select(this).append('text')
+        .attr('text-anchor', 'middle').attr('fill', '#f2ece0')
+        .attr('font-family', "'Lora', Georgia, serif").attr('font-size', fontSize)
+        .attr('pointer-events', 'none');
+      lines.forEach((line, i) => {
+        text.append('tspan').attr('x', 0)
+          .attr('dy', i === 0 ? -(totalH / 2) + fontSize : lineH)
+          .text(line);
+      });
     });
 
-  </script>
+    const sim = d3.forceSimulation(nodes)
+      .force('link',      d3.forceLink(links).id(d => d.id).distance(145))
+      .force('charge',    d3.forceManyBody().strength(-430))
+      .force('center',    d3.forceCenter(W / 2, H / 2))
+      .force('collision', d3.forceCollide(d => d.anchor ? ANCHOR_R + 20 : REGULAR_R + 16))
+      .on('tick', () => {
+        link
+          .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+          .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+        node.attr('transform', d => `translate(${d.x},${d.y})`);
+      });
+
+    svg.on('click', closePanel);
+  })();
+
+
+  // =============================================================
+  // NODE PANEL — open, populate, close
+  // =============================================================
+  function openPanel(d) {
+    document.getElementById('panel-type-tag').textContent = d.anchor ? 'Anchor Topic' : 'Networked Topic';
+    document.getElementById('panel-title').textContent = d.label.replace(/\n/g, ' ');
+    document.getElementById('panel-blurb').textContent = d.blurb;
+
+    const qEl = document.getElementById('panel-quotes');
+    qEl.innerHTML = '';
+    (d.quotes || []).forEach(q => {
+      const div = document.createElement('div');
+      div.className = 'panel-quote';
+      div.innerHTML = `<p>${q.text}</p><span class="attr">${q.attribution}</span>`;
+      qEl.appendChild(div);
+    });
+    if (!d.quotes?.length)
+      qEl.innerHTML = '<em style="color:var(--lichen);font-size:0.85rem;">No quotes added yet.</em>';
+
+    const rEl = document.getElementById('panel-resources');
+    rEl.innerHTML = '';
+    (d.resources || []).forEach(r => {
+      const a = document.createElement('a');
+      a.className = 'panel-resource-link';
+      a.href = r.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      a.innerHTML = `<span class="resource-type-tag">${r.type}</span><span>${r.label}</span>`;
+      rEl.appendChild(a);
+    });
+    if (!d.resources?.length)
+      rEl.innerHTML = '<em style="color:var(--lichen);font-size:0.85rem;">No resources added yet.</em>';
+
+    document.getElementById('node-panel').classList.add('open');
+  }
+
+  function closePanel() { document.getElementById('node-panel').classList.remove('open'); }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+
+
+  // =============================================================
+  // CHARACTER ACCORDION
+  // =============================================================
+  function toggleChar(id) { document.getElementById(id).classList.toggle('open'); }
+
+</script>
 </body>
 </html>
