@@ -12,7 +12,7 @@
        ============================================================ -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
 
   <!-- D3.js — for the interactive network graph on page 4 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
@@ -34,8 +34,8 @@
 
       --nav-width:  200px;     /* sidebar width — change here to resize nav */
 
-      --font-display: 'Cormorant Garamond', Georgia, serif;
-      --font-body:    'Lora', Georgia, serif;
+      --font-display: 'Open Sans', Georgia, serif;
+      --font-body:    'Open Sans', Georgia, serif;
       --transition:   0.2s ease;
     }
 
@@ -220,7 +220,7 @@
 
     .page-num   { font-family: var(--font-display); font-size: 0.85rem; color: var(--clay); font-style: italic; }
     .page-rule  { flex: 1; max-width: 32px; height: 1px; background: var(--fog); }
-    .page-tag   { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--lichen); }
+    .page-tag   { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--moss); }
 
     /* Page heading */
     h2.page-heading {
@@ -602,18 +602,18 @@
        ============================================================ -->
   <nav aria-label="Sections">
     <div class="nav-logo">
-      <span class="nav-raccoon">🦝</span>
+      <span class="nav-raccoon"></span>
       Raccoon Play<br>Dramaturgy Packet
     </div>
     <ul id="nav-list">
-      <li><button onclick="showPage(0)">How to Use</button></li>
-      <li><button onclick="showPage(1)">Introduction</button></li>
-      <li><button onclick="showPage(2)">Big Questions</button></li>
+      <li><button onclick="showPage(0)">Dramaturgy's Note/How to Use</button></li>
+      <li><button onclick="showPage(1)">Introduction/At A Glance</button></li>
+      <li><button onclick="showPage(2)">Big Questions and Themes</button></li>
       <li><button onclick="showPage(3)">Networked Topics</button></li>
       <li><button onclick="showPage(4)">Raccoon Culture</button></li>
       <li><button onclick="showPage(5)">Further Reading</button></li>
       <li><button onclick="showPage(6)">Visual Library</button></li>
-      <li><button onclick="showPage(7)">Character Pipeline</button></li>
+      <li><button onclick="showPage(7)">Character Pipeline Activity</button></li>
       <!--
         ADD NEW SECTION NAV LINK:
         <li><button onclick="showPage(8)">New Section</button></li>
@@ -640,17 +640,15 @@
 
       <div class="placeholder">
         <span class="ph-label">✦ Dramaturg's Note</span>
-        Write your note to the company here. Explain how the packet is organized,
-        how you'd like collaborators to engage with it, and any framing you want to offer
-        before they dive in. This is your voice in the room before you're in the room.
+      <p>Contact: alyssa.barrack@ucf.edu</p>
+        <p>Available for individual meetings as requested.</p>
+        <p>Hello everyone! We are Alyssa and Sam, your dramaturgy team for this production. We look forward to digging into this rich, intense, and timely show with you all this summer.</p>
+        <p>Our approach to this play involved figuring out how to give everyone easy, accessible entry ways into some of the many big themes of this text. The packet has sections that dive into thematic anchors in the play, big questions the play asks of us and our audience, and character-focused materials to help us build out the world and understand the people we are portraying. Our goal is to get us all thinking about how these ideas operate structurally and personally in the play and the world at large. I encourage you to navigate the website nonlinearly: find ideas that feel most relevant to your work, identify connections between ideas/sections, and keep a running list of questions! This is a space for curiosity and exploration, and Sam and I are available to help you find additional resources, talk through ideas, and even undergo additional research with/for you as we work together!</p>
       </div>
 
       <div class="placeholder">
         <span class="ph-label">✦ How to Navigate This Site</span>
-        Describe the structure: the sidebar navigates between distinct pages,
-        the Networked Topics page has an interactive graph where clicking a node
-        opens a panel with your research notes, and the Character Pipeline page
-        has a printable worksheet activity.
+       Use the sidebar to jump to specific pages, or the arrows at the bottom of each page to move through sections sequentially. The <i>Networked Topics</i> page includes an interactive graph. Clicking on a node (circle with theme title) will open a panel with notes and resources related to that topic. The <i>Character Pipeline</i> section includes a worksheet to help guide you in mapping your character's conspiracy thinking trajectory. It is optional! If you have questions about this worksheet or want to talk through it together we can find time to do that!
       </div>
 
       <div class="page-nav">
@@ -673,19 +671,16 @@
 
       <div class="placeholder">
         <span class="ph-label">✦ Research Introduction</span>
-        Write a framing paragraph introducing the world of the play and the research
-        areas you've explored. What should a company member understand before starting?
+        See the following links to articles that you should skim on your own as we begin the process! These are about the Lions Club and the Danville Raccoon Dinner they host annually. Bring your questions into rehearsal!
+        <a href="https://www.richlandsource.com/2026/02/03/a-country-delicacy-danville-lions-club-tressel-host-83rd-raccoon-dinner/
+" target="_blank" rel=noopener noreferrer>Danville Lions Club 83rd Annual Raccoon Dinner</a>
+        <a href="https://www.lionsclubs.org/en/about-us/our-organization/core-values" target="_blank" rel=noopener nofererrer>Lions Club - About the Organization</a>
+        <a href="https://e-clubhouse.org/sites/danvilleoh/index.php" target="_blank" rel=noopener noreferrer>The Danville Lions Club Website</a>
       </div>
 
       <!-- At-a-glance quick facts — edit the <dd> values -->
       <dl class="glance-row">
-        <div class="glance-item"><dt>Playwright</dt><dd>[Name]</dd></div>
-        <div class="glance-item"><dt>Setting</dt><dd>[Place / Time]</dd></div>
-        <div class="glance-item"><dt>Genre</dt><dd>Political Satire</dd></div>
-        <div class="glance-item"><dt>Runtime</dt><dd>[approx.]</dd></div>
-        <div class="glance-item"><dt>World Premiere</dt><dd>[Year / Venue]</dd></div>
-        <div class="glance-item"><dt>Characters</dt><dd>[Number]</dd></div>
-        <!-- ADD MORE: duplicate a .glance-item div -->
+        <div class="glance-item"><dt>Playwright</dt><dd>SMJ | <a href="https://www.smjwrites.com/small-town-icons" target="_blank" rel=noopener noreferrer>smj's website</a></dd></div>
       </dl>
 
       <div class="page-nav">
@@ -704,21 +699,18 @@
         <span class="page-rule"></span>
         <span class="page-tag">Themes</span>
       </div>
-      <h2 class="page-heading">Big Questions and Themes</h2>
+      <h2 class="page-heading">Big Questions</h2>
 
       <div class="placeholder">
         <span class="ph-label">✦ Framing Note</span>
-        Add a sentence or two introducing why these questions matter to this production.
-      </div>
+This is a list of big questions the play asks of us and our audience. We'd love to add to this list with your suggestions as we work! Let us know in an email or before/after rehearsal if you've got one to add.      </div>
 
-      <!-- EDIT: Replace each <li> text with your real questions.
-           Add or remove items as needed. Update roman numerals to match. -->
       <ul class="questions-list">
-        <li><span class="q-index">i.</span><span>[Big Question #1 — replace with your question]</span></li>
-        <li><span class="q-index">ii.</span><span>[Big Question #2 — replace with your question]</span></li>
-        <li><span class="q-index">iii.</span><span>[Big Question #3 — replace with your question]</span></li>
-        <li><span class="q-index">iv.</span><span>[Big Question #4 — replace with your question]</span></li>
-        <li><span class="q-index">v.</span><span>[Big Question #5 — add more items as needed]</span></li>
+        <li><span class="q-index">i.</span><span>What emotional needs to conspiracy theories meet [for our characters]?</span></li>
+        <li><span class="q-index">ii.</span><span>How do conspiracy narratives feel empowering, and how are they destructive?</span></li>
+        <li><span class="q-index">iii.</span><span>How do contemporary conspiracies spread through mainstream places like reddit, facebook, tiktok, instagram, etc.?</span></li>
+        <li><span class="q-index">iv.</span><span>How are we, as individuals, complicit?</span></li>
+        <li><span class="q-index">v.</span><span>What do we forgive for the sake of comfort, friendship, peace, and where are the lines?</span></li>
       </ul>
 
       <div class="page-nav">
@@ -749,7 +741,7 @@
 
       <!-- D3 renders the SVG graph inside this div -->
       <div id="network-graph-container">
-        <div class="graph-hint">click a node to open &middot; drag to rearrange &middot; scroll to zoom</div>
+        <div class="graph-hint">click a node to open</div>
       </div>
 
       <div class="page-nav">
@@ -822,12 +814,6 @@
       </div>
       <h2 class="page-heading">Reference Documents &amp; Further Reading</h2>
 
-      <div class="placeholder">
-        <span class="ph-label">✦ Curatorial Note</span>
-        Add a brief note about how you've organized these references,
-        or what you'd most recommend a company member start with.
-      </div>
-
       <!-- EDIT: Each .reference-entry is one item.
            Change .ref-type-tag to: Book, Article, Video, Podcast, Website, etc.
            Wrap .ref-title in <a href="..."> to add a hyperlink.
@@ -884,8 +870,7 @@
 
       <div class="placeholder">
         <span class="ph-label">✦ Curatorial Note</span>
-        Write a brief note about the images you've gathered and why.
-        What was your eye drawn to, and what do you want the company to feel or notice?
+
       </div>
 
       <!-- EDIT: Replace each .visual-slot with a real <img> tag or <iframe>.
@@ -918,15 +903,12 @@
       </div>
       <h2 class="page-heading">Character Pipeline Activity</h2>
 
-      <button class="print-link" onclick="window.print()">↓ Print this worksheet</button>
-
       <!-- PLACEHOLDER: Edit the activity instructions below -->
       <p class="activity-intro">
-        This activity invites you to trace how your character may have moved through
+        This activity is meant to help you trace how your character may have moved through
         the radicalization cycle — the back-and-forth process of normalization,
-        acclimation, and dehumanization that shaped who they are at the top of the play.
-        There are no right answers. Use the dramaturg's suggestion as a starting point,
-        then trust your own instincts. Fill this out digitally or print it.
+        acclimation, and dehumanization that shaped their identity and behavior at the top of the play.
+        There are no right answers.
       </p>
 
       <!-- ---- PIPELINE MODEL: cycle diagram + stage descriptions ---- -->
@@ -984,10 +966,9 @@
               <h4>Normalization</h4>
             </div>
             <p>Extreme ideas, rhetoric, or behaviors are made to seem ordinary or inevitable.
-               Repeated exposure to a fringe idea until it no longer registers as alarming —
-               it becomes the wallpaper.</p>
+               Repeated exposure to a fringe idea until it no longer registers as alarming. This may look like repetition of images or text online, ideas repeated by friends or colleagues, memes and humor, and more.</p>
             <div class="placeholder" style="margin-top:0.6rem; max-width:100%;">
-              <span class="ph-label">✦ Your framing</span>
+              <span class="ph-label">Question</span>
               How does normalization function in this play — which ideas, through what mechanisms, for whom?
             </div>
           </div>
@@ -997,11 +978,12 @@
               <span class="stage-swatch" style="background:var(--moss);"></span>
               <h4>Acclimation</h4>
             </div>
-            <p>Where normalization is passive exposure, acclimation is active adjustment.
-               A character begins to orient their identity and relationships around the normalized idea.
-               Not yet committed — but becoming comfortable.</p>
+            <p>Normalization is passive/exposure to ideas, but acclimation is an active settling into these ideas. 
+               In this phase, a character begins to orient their identity and relationships around the normalized idea.
+              They have accepted the idea as normal and are trying it on in their own speech, behaviors, posts, etc.
+              This phase allows someone to become more comfortable with fringe ideas post-normalization.</p>
             <div class="placeholder" style="margin-top:0.6rem; max-width:100%;">
-              <span class="ph-label">✦ Your framing</span>
+              <span class="ph-label">Question</span>
               What does it look like when a character settles into a worldview? What do they gain, give up?
             </div>
           </div>
@@ -1011,26 +993,27 @@
               <span class="stage-swatch" style="background:var(--clay);"></span>
               <h4>Dehumanization</h4>
             </div>
-            <p>The endpoint — and the fuel for the next cycle. Once a character has dehumanized a target
-               (or themselves), that act makes the next round of normalization easier.
-               It loops back; it doesn't end.</p>
+            <p>Once a person has acclimated to fringe ideas, they can move towards dehumanization, or no longer thinking of "others" outside of their fringe belief as fellow humans worthy of respect, acknowledgement, or even rights/life.
+             This is the last spot in the triad presented in this model, but also the most likely to cause backtracking in this cyclical type of model. 
+              It can be difficult to buy into dehumanization if acclimation is not fully and thoroughly complete. 
+              That being said, once a character has dehumanized a target (or themselves), that act makes the next round of normalization easier.
+              </p>
             <div class="placeholder" style="margin-top:0.6rem; max-width:100%;">
-              <span class="ph-label">✦ Your framing</span>
-              How does dehumanization manifest in this play — in language, action, relationship?
+              <span class="ph-label">Question</span>
+              How does dehumanization manifest in this play — language, action, relationships?
             </div>
           </div>
 
           <div class="stage-desc" style="border-left-color:var(--fog);">
             <div class="stage-desc-header">
               <span class="stage-swatch" style="background:var(--fog);"></span>
-              <h4>The Loop</h4>
+              <h4>Cycle</h4>
             </div>
             <p>These stages feed each other recursively. Each cycle of normalization makes acclimation faster;
-               each act of dehumanization becomes the new baseline to normalize.
-               The pipeline is not a line — it's a spiral.</p>
+               each act of dehumanization becomes the new baseline to normalize.</p>
             <div class="placeholder" style="margin-top:0.6rem; max-width:100%;">
-              <span class="ph-label">✦ Your framing</span>
-              How does this recursive quality show up in the structure of the play itself?
+              <span class="ph-label">Question</span>
+              Does/How does this recursive quality show up in the structure of the play itself?
             </div>
           </div>
 
@@ -1039,7 +1022,6 @@
 
       <!-- ---- CHARACTER ENTRIES ----
            Each .character-entry is one accordion.
-           EDIT: Replace name, role, and dramaturg note.
            ADD A CHARACTER: duplicate an entire .character-entry block,
            give it a new id (char-4, etc.), update onclick to match.
       -->
@@ -1047,73 +1029,25 @@
       <div class="character-entry" id="char-1">
         <button class="character-toggle" onclick="toggleChar('char-1')">
           <div>
-            <div class="char-name-display">[Character Name 1]</div>
-            <div class="char-role-display">[Brief role description]</div>
+            <div class="char-name-display">Worksheet</div>
+            <div class="char-role-display">FIRST: Describe your character in 1 short sentence. Try not to use the sentence on the character description in the script.</div>
           </div>
           <span class="toggle-chevron">▾</span>
         </button>
         <div class="character-body">
           <div class="dramaturg-note-inline">
             <strong>🦝 Dramaturg's Suggestion</strong>
-            [Your hypothesis about this character's journey through the cycle. Where did they enter?
-            What vulnerability made them susceptible? What stage are they in by the top of the play?]
+            Start by establishing your own hypothesis about this character's journey through the cycle. Where do you think they entered the pipeline? Think about social media, websites, interpersonal relationships, poltiics, work and home environment, etc.
+            What vulnerability made them susceptible? What stage are they in by the top of the play?
           </div>
           <div class="worksheet">
             <div><label class="field-label">Where do you think your character entered the cycle?</label><input class="fill-line" type="text" placeholder="Your answer..." /></div>
             <div><label class="field-label">What was your character's core grievance or unmet need?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
             <div><label class="field-label">Where in the cycle are they at the start of the play — normalization, acclimation, or dehumanization?</label><input class="fill-line" type="text" placeholder="e.g. deep in acclimation, beginning to dehumanize..." /></div>
-            <div><label class="field-label">Who or what was the most influential force pulling them through the cycle?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <div><label class="field-label">Is there a moment in the play where they cycle back — where something normalized becomes strange again?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Who or what was the most (or at least a significant) influential force pulling them through the cycle?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Is there a moment in the play where they cycle back, or where something normalized becomes strange again?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
             <div><label class="field-label">Is there anything that could interrupt the cycle for them? What would it take?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
             <!-- ADD MORE QUESTIONS: duplicate a <div> block above -->
-          </div>
-        </div>
-      </div>
-
-      <div class="character-entry" id="char-2">
-        <button class="character-toggle" onclick="toggleChar('char-2')">
-          <div>
-            <div class="char-name-display">[Character Name 2]</div>
-            <div class="char-role-display">[Brief role description]</div>
-          </div>
-          <span class="toggle-chevron">▾</span>
-        </button>
-        <div class="character-body">
-          <div class="dramaturg-note-inline">
-            <strong>🦝 Dramaturg's Suggestion</strong>
-            [Your notes on this character's journey through the cycle.]
-          </div>
-          <div class="worksheet">
-            <div><label class="field-label">Where do you think your character entered the cycle?</label><input class="fill-line" type="text" placeholder="Your answer..." /></div>
-            <div><label class="field-label">What was your character's core grievance or unmet need?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <div><label class="field-label">Where in the cycle are they at the start of the play — normalization, acclimation, or dehumanization?</label><input class="fill-line" type="text" placeholder="e.g. deep in acclimation, beginning to dehumanize..." /></div>
-            <div><label class="field-label">Who or what was the most influential force pulling them through the cycle?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <div><label class="field-label">Is there a moment in the play where they cycle back — where something normalized becomes strange again?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <div><label class="field-label">Is there anything that could interrupt the cycle for them? What would it take?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="character-entry" id="char-3">
-        <button class="character-toggle" onclick="toggleChar('char-3')">
-          <div>
-            <div class="char-name-display">[Character Name 3]</div>
-            <div class="char-role-display">[Brief role description]</div>
-          </div>
-          <span class="toggle-chevron">▾</span>
-        </button>
-        <div class="character-body">
-          <div class="dramaturg-note-inline">
-            <strong>🦝 Dramaturg's Suggestion</strong>
-            [Your notes on this character's journey through the cycle.]
-          </div>
-          <div class="worksheet">
-            <div><label class="field-label">Where do you think your character entered the cycle?</label><input class="fill-line" type="text" placeholder="Your answer..." /></div>
-            <div><label class="field-label">What was your character's core grievance or unmet need?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <div><label class="field-label">Where in the cycle are they at the start of the play — normalization, acclimation, or dehumanization?</label><input class="fill-line" type="text" placeholder="e.g. deep in acclimation, beginning to dehumanize..." /></div>
-            <div><label class="field-label">Who or what was the most influential force pulling them through the cycle?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <div><label class="field-label">Is there a moment in the play where they cycle back — where something normalized becomes strange again?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <div><label class="field-label">Is there anything that could interrupt the cycle for them? What would it take?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
           </div>
         </div>
       </div>
@@ -1200,7 +1134,7 @@
   <div class="panel-body">
     <div class="panel-heading">Our Notes</div>
     <div class="panel-blurb" id="panel-blurb"></div>
-    <div class="panel-heading">Pulled Quotes</div>
+    <div class="panel-heading">Quotes</div>
     <div id="panel-quotes"></div>
     <div class="panel-heading">Further Resources</div>
     <div id="panel-resources"></div>
@@ -1256,14 +1190,18 @@
   const nodes = [
     {
       id: "emotion", label: "Emotion &\nPsychology", anchor: true,
-      blurb: "[PLACEHOLDER] Add your notes on Emotion and Psychology here. What aspects of emotional manipulation, psychological vulnerability, or affective politics are most relevant to this play?",
+      blurb: "Much of this play is not, at its core, about what people believe but rather why people believe, their motivations for buying into the things they believe. Conspiracy thinking functions as a way to stabilize uncertainty, and gives people a sense of structure and agency. While those outside of the conspiracist community might see problems with their thinking and its consequences, conspiracy thinking turns vague ambient anxiety into a concrete and targetable issue and provides a sense of identity and belonging to those who are isolated and scared. These communities show those who joing that they aren't the only ones struggling, confused, and scared, and offer them a sense of illusory control. They can see the 'truth' if they are in this group. That kind of emotional clarity can be very seductive, especially when paired with those existing feelings of instability, loneliness, or loss of control. In summary: conspiracies reduces the complexity of lived experience into something emotionally manageable for vulnerable people; they transform uncertainty into certainty, even if it is a false truth; they provide a sense of community and identity ('I know the truth when others don't').",
       quotes: [
-        { text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" },
-        { text: "[PLACEHOLDER] Add another quote here.", attribution: "— Source, Title" }
+        { text: "...conspiracy theories create meaning, reduce complexity and uncertainty, and emphasize human agency...", attribution: "— Butter, 'The Nature of Conspiracy Theories', 65" },
+        { text: "They 'resolve the ambiguity of complicated situations by providing a coherent account of what is going on and who is good and who is bad.'", attribution: "— Butter, 'The Nature of Conspiracy Theories', 67" }
+        { text: "Rather than attacking the fundamental assumptions of their ideology from the outset, it probably makes more sense to begin with a more low-key approach, such as enquiring after the sources of some of their statements or detailed allegations.", attribution: "— Butter, 'The Nature of Conspiracy Theories', 163" },
+        { text: "To feel love for the nation, whereby love is an investment that should be returned (you are the 'taxpayer') is also to feel injured by these others, who are 'taking' what is yours...the 'you' implicitly evokes a 'we', a group of subjects that can identify themselves with the injured nation in this performance of personal injury.", attribution: "— Ahmed, 'The Cultural Politics of Emotion', 9" },
+        { text: "Shared feelings 'not only heighten tension, they are also in tension. Emotions in their very intensity involve miscommunication, such that even when we feel we have the same feeling, we don't necessarily have the same relationship to the feeling...", attribution: "— Ahmed, 'The Cultural Politics of Emotion', 20" },
+
       ],
       resources: [
-        { label: "[Resource 1 — e.g. Book or Article]", url: "#", type: "book" },
-        { label: "[Resource 2 — e.g. Video or Podcast]", url: "#", type: "video" }
+        { label: "[Resource 1]", url: "#", type: "book" },
+        { label: "[Resource 2]", url: "#", type: "video" }
       ]
     },
     {
