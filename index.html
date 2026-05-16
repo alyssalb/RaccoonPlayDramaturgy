@@ -7,53 +7,54 @@
 
   <!-- ============================================================
        FONTS
-       Cormorant Garamond: editorial serif for headings
-       Lora: warm serif for body text
+       Open Sans: clean sans-serif for body text (your choice)
+       Cormorant Garamond: kept for headings only — gives the
+       editorial serif weight to h2/h3 without affecting body copy.
+       If you want Open Sans everywhere including headings, change
+       --font-display to 'Open Sans' and remove the Cormorant import.
        ============================================================ -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600&family=Open+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
 
   <!-- D3.js — for the interactive network graph on page 4 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 
   <style>
     /* ============================================================
-       DESIGN TOKENS — naturalistic palette
-       Edit these variables to retheme the entire site at once.
+       DESIGN TOKENS
+       --font-display = headings (h2, panel titles, etc.)
+       --font-body    = all body copy, nav, labels, etc.
+       To use Open Sans everywhere: set both to 'Open Sans', sans-serif
        ============================================================ */
     :root {
-      --linen:      #f2ece0;   /* warm page background */
-      --parchment:  #ede4d0;   /* slightly deeper warm white */
-      --soil:       #2e2318;   /* near-black text / nav bg */
-      --clay:       #9e6a47;   /* terracotta accent */
-      --moss:       #4a6741;   /* forest green — anchor nodes */
-      --lichen:     #8a9e7a;   /* muted sage — secondary text */
-      --fog:        #c8beae;   /* mid-tone rule lines */
-      --paper:      #f8f4ec;   /* panel / node detail bg */
+      --linen:      #f2ece0;
+      --parchment:  #ede4d0;
+      --soil:       #2e2318;
+      --clay:       #9e6a47;
+      --moss:       #4a6741;
+      --lichen:     #8a9e7a;
+      --fog:        #c8beae;
+      --paper:      #f8f4ec;
 
-      --nav-width:  200px;     /* sidebar width — change here to resize nav */
+      --nav-width:  200px;
 
-      --font-display: 'Open Sans', Georgia, serif;
-      --font-body:    'Open Sans', Georgia, serif;
+      --font-display: 'Cormorant Garamond', Georgia, serif; /* headings */
+      --font-body:    'Open Sans', Helvetica, sans-serif;   /* body copy */
       --transition:   0.2s ease;
     }
 
-    /* ============================================================
-       RESET & BASE
-       ============================================================ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; overflow: hidden; } /* no page scroll — sections are pages */
+    html, body { height: 100%; overflow: hidden; }
 
     body {
       font-family: var(--font-body);
       background: var(--linen);
       color: var(--soil);
-      font-size: 17px;
+      font-size: 16px;
       line-height: 1.8;
     }
 
-    /* Subtle paper grain texture across the whole page */
     body::before {
       content: '';
       position: fixed;
@@ -63,9 +64,6 @@
       z-index: 0;
     }
 
-    /* ============================================================
-       LAYOUT — sidebar + content area side by side, full height
-       ============================================================ */
     #app {
       display: flex;
       height: 100vh;
@@ -74,8 +72,7 @@
     }
 
     /* ============================================================
-       SIDEBAR NAVIGATION
-       Fixed width left column. Links switch the visible page.
+       SIDEBAR NAV
        ============================================================ */
     nav {
       width: var(--nav-width);
@@ -99,18 +96,11 @@
       opacity: 0.9;
     }
 
-    .nav-raccoon {
-      display: block;
-      font-style: normal;
-      font-size: 1.3rem;
-      margin-bottom: 0.3rem;
-      opacity: 0.6;
-    }
+    .nav-raccoon { display: block; font-style: normal; font-size: 1.3rem; margin-bottom: 0.3rem; opacity: 0.6; }
 
     nav ul { list-style: none; }
     nav ul li { margin-bottom: 0.05rem; }
 
-    /* Nav links are buttons that call showPage() */
     nav ul li button {
       display: block;
       width: 100%;
@@ -130,7 +120,6 @@
 
     nav ul li button:hover { color: rgba(242,236,224,0.85); }
 
-    /* Active page: full brightness + clay left rule */
     nav ul li button.active {
       color: var(--linen);
       border-left: 2px solid var(--clay);
@@ -138,8 +127,7 @@
     }
 
     /* ============================================================
-       CONTENT AREA — fills remaining width, full height
-       Each .page sits here. Only the active one is visible.
+       CONTENT AREA & PAGES
        ============================================================ */
     #content {
       flex: 1;
@@ -148,28 +136,23 @@
       overflow: hidden;
     }
 
-    /* ============================================================
-       PAGES — each section is a full-height page
-       All pages are stacked; JS adds .active to show one at a time.
-       ============================================================ */
     .page {
       position: absolute;
       inset: 0;
-      overflow-y: auto;           /* each page scrolls independently */
+      overflow-y: auto;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.28s ease;
-      padding: 4rem 5rem 6rem;    /* generous breathing room */
+      padding: 4rem 5rem 6rem;
     }
 
-    /* The active page fades in */
     .page.active {
       opacity: 1;
       pointer-events: all;
     }
 
     /* ============================================================
-       PAGE NAVIGATION — prev/next arrows at bottom of each page
+       PAGE NAVIGATION (prev/next arrows)
        ============================================================ */
     .page-nav {
       display: flex;
@@ -184,16 +167,13 @@
       background: none;
       border: none;
       font-family: var(--font-body);
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--lichen);
       cursor: pointer;
       padding: 0;
       transition: color var(--transition);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
     }
 
     .page-nav-btn:hover { color: var(--clay); }
@@ -207,10 +187,8 @@
     }
 
     /* ============================================================
-       SHARED TYPOGRAPHY — used across all pages
+       SHARED TYPOGRAPHY
        ============================================================ */
-
-    /* Eyebrow above each page heading: number · rule · tag */
     .page-eyebrow {
       display: flex;
       align-items: center;
@@ -222,7 +200,6 @@
     .page-rule  { flex: 1; max-width: 32px; height: 1px; background: var(--fog); }
     .page-tag   { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--moss); }
 
-    /* Page heading */
     h2.page-heading {
       font-family: var(--font-display);
       font-size: clamp(1.8rem, 3.5vw, 2.8rem);
@@ -233,25 +210,45 @@
       max-width: 680px;
     }
 
-    /* Running prose */
     .prose {
-      font-size: 1rem;
+      font-size: 0.97rem;
       line-height: 1.85;
       color: #3a2e20;
       max-width: 640px;
     }
 
-    /* Placeholder — italic left-rule note, no filled card */
+    /* Placeholder — italic left-rule note */
     .placeholder {
       font-style: italic;
-      color: var(--lichen);
-      font-size: 0.9rem;
+      color: #5a4e40;
+      font-size: 0.92rem;
       padding-left: 1.25rem;
       border-left: 2px solid var(--fog);
       margin: 1.25rem 0;
-      line-height: 1.7;
-      max-width: 620px;
+      line-height: 1.75;
+      max-width: 640px;
     }
+
+    /* Non-italic placeholder text (for your real prose paragraphs) */
+    .placeholder p {
+      font-style: normal;
+      margin-bottom: 0.6rem;
+      color: #3a2e20;
+    }
+
+    .placeholder p:last-child { margin-bottom: 0; }
+
+    /* Links inside placeholders */
+    .placeholder a {
+      color: var(--clay);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      display: block;
+      margin-top: 0.5rem;
+      font-style: normal;
+    }
+
+    .placeholder a:hover { color: var(--moss); }
 
     .placeholder .ph-label {
       display: block;
@@ -260,15 +257,11 @@
       letter-spacing: 0.15em;
       text-transform: uppercase;
       color: var(--clay);
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.5rem;
     }
 
     /* ============================================================
-       PAGE 1: HOW TO USE — no special styles needed beyond shared
-       ============================================================ */
-
-    /* ============================================================
-       PAGE 2: INTRODUCTION — at-a-glance definition list
+       PAGE 2: INTRODUCTION — at-a-glance
        ============================================================ */
     .glance-row {
       display: flex;
@@ -286,9 +279,10 @@
 
     .glance-item dt { font-size: 0.65rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--lichen); margin-bottom: 0.3rem; }
     .glance-item dd { font-family: var(--font-display); font-size: 1.15rem; color: var(--soil); }
+    .glance-item a { color: var(--clay); text-decoration: underline; text-underline-offset: 2px; }
 
     /* ============================================================
-       PAGE 3: BIG QUESTIONS — numbered list, no cards
+       PAGE 3: BIG QUESTIONS
        ============================================================ */
     .questions-list { list-style: none; margin-top: 1rem; max-width: 660px; }
 
@@ -298,7 +292,7 @@
       gap: 0.5rem;
       padding: 1.1rem 0;
       border-bottom: 1px solid var(--fog);
-      font-size: 1rem;
+      font-size: 0.97rem;
       line-height: 1.6;
       align-items: baseline;
     }
@@ -309,11 +303,9 @@
     /* ============================================================
        PAGE 4: NETWORKED TOPICS — graph + node panel
        ============================================================ */
-
-    /* Graph container fills most of the page height */
     #network-graph-container {
       width: 100%;
-      height: calc(100vh - 280px); /* leaves room for heading + hint */
+      height: calc(100vh - 280px);
       min-height: 340px;
       background: var(--parchment);
       border-radius: 4px;
@@ -339,7 +331,7 @@
       font-style: italic;
     }
 
-    /* Node detail panel — slides in from right edge of content area */
+    /* Node detail panel */
     #node-panel {
       position: fixed;
       top: 0;
@@ -395,10 +387,10 @@
 
     .panel-heading:first-child { margin-top: 0; }
 
-    .panel-blurb { font-size: 0.93rem; line-height: 1.8; color: #3a2e20; font-style: italic; }
+    .panel-blurb { font-size: 0.9rem; line-height: 1.8; color: #3a2e20; }
 
     .panel-quote { margin: 1rem 0; padding-left: 1.25rem; border-left: 2px solid var(--lichen); }
-    .panel-quote p { font-family: var(--font-display); font-size: 1.1rem; font-style: italic; line-height: 1.5; color: var(--soil); }
+    .panel-quote p { font-family: var(--font-display); font-size: 1.05rem; font-style: italic; line-height: 1.55; color: var(--soil); }
     .panel-quote .attr { display: block; font-size: 0.75rem; color: var(--lichen); margin-top: 0.4rem; }
 
     .panel-resource-link {
@@ -424,7 +416,7 @@
     }
 
     /* ============================================================
-       PAGE 6: REFERENCE DOCS — editorial text list
+       PAGE 6: REFERENCE DOCS
        ============================================================ */
     .reference-entry {
       display: grid;
@@ -466,16 +458,14 @@
        PAGE 8: CHARACTER PIPELINE
        ============================================================ */
     .activity-intro {
-      font-style: italic; font-size: 0.97rem; color: #4a3e2c;
+      font-size: 0.97rem; color: #4a3e2c;
       padding-left: 1.5rem; border-left: 3px solid var(--moss);
       margin-bottom: 2.5rem; max-width: 580px; line-height: 1.85;
     }
 
-    /* Cycle diagram */
     .cycle-diagram-wrap { display: flex; justify-content: flex-start; margin: 1.5rem 0 2rem; }
     .cycle-diagram { width: 100%; max-width: 280px; height: auto; }
 
-    /* Two-column layout on wider screens: diagram left, stage descriptions right */
     .pipeline-layout {
       display: grid;
       grid-template-columns: 300px 1fr;
@@ -484,9 +474,7 @@
       margin-bottom: 3rem;
     }
 
-    @media (max-width: 900px) {
-      .pipeline-layout { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 900px) { .pipeline-layout { grid-template-columns: 1fr; } }
 
     .pipeline-stage-descriptions { display: flex; flex-direction: column; gap: 0; }
 
@@ -501,7 +489,9 @@
     .stage-desc h4 { font-family: var(--font-display); font-size: 1.1rem; font-style: italic; color: var(--soil); }
     .stage-desc p { font-size: 0.88rem; line-height: 1.75; color: #3a2e20; }
 
-    /* Character accordion */
+    /* Stage description questions (reusing .placeholder style) */
+    .stage-desc .placeholder { max-width: 100%; margin-top: 0.6rem; }
+
     .character-entry { border-top: 1px solid var(--fog); max-width: 700px; }
     .character-entry:last-of-type { border-bottom: 1px solid var(--fog); }
 
@@ -513,7 +503,7 @@
     }
 
     .char-name-display { font-family: var(--font-display); font-size: 1.35rem; font-style: italic; color: var(--soil); line-height: 1.1; }
-    .char-role-display { font-size: 0.78rem; color: var(--lichen); margin-top: 0.15rem; }
+    .char-role-display { font-size: 0.78rem; color: var(--lichen); margin-top: 0.15rem; font-style: italic; }
     .toggle-chevron { font-size: 0.75rem; color: var(--lichen); transition: transform 0.2s; flex-shrink: 0; }
     .character-entry.open .toggle-chevron { transform: rotate(180deg); }
 
@@ -521,7 +511,7 @@
     .character-entry.open .character-body { display: block; }
 
     .dramaturg-note-inline {
-      font-style: italic; font-size: 0.9rem; color: var(--lichen);
+      font-size: 0.9rem; color: var(--lichen);
       padding-left: 1.25rem; border-left: 2px solid var(--moss);
       margin-bottom: 1.75rem; line-height: 1.8;
     }
@@ -533,7 +523,7 @@
 
     .worksheet { display: flex; flex-direction: column; gap: 1.25rem; }
 
-    .field-label { display: block; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--lichen); margin-bottom: 0.45rem; }
+    .field-label { display: block; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--lichen); margin-bottom: 0.45rem; }
 
     .fill-line {
       display: block; width: 100%; border: none;
@@ -566,7 +556,7 @@
     .print-link:hover { color: var(--clay); }
 
     /* ============================================================
-       RESPONSIVE — stack nav on mobile
+       RESPONSIVE
        ============================================================ */
     @media (max-width: 700px) {
       html, body { overflow: auto; }
@@ -594,42 +584,26 @@
 
 <div id="app">
 
-  <!-- ============================================================
-       SIDEBAR NAVIGATION
-       Buttons call showPage(index) to switch visible page.
-       To add a section: add a <li> here AND a .page div below,
-       keeping the order identical.
-       ============================================================ -->
   <nav aria-label="Sections">
     <div class="nav-logo">
       <span class="nav-raccoon"></span>
       Raccoon Play<br>Dramaturgy Packet
     </div>
     <ul id="nav-list">
-      <li><button onclick="showPage(0)">Dramaturgy's Note/How to Use</button></li>
-      <li><button onclick="showPage(1)">Introduction/At A Glance</button></li>
+      <li><button onclick="showPage(0)">Dramaturg's Note / How to Use</button></li>
+      <li><button onclick="showPage(1)">Introduction / At A Glance</button></li>
       <li><button onclick="showPage(2)">Big Questions and Themes</button></li>
       <li><button onclick="showPage(3)">Networked Topics</button></li>
       <li><button onclick="showPage(4)">Raccoon Culture</button></li>
       <li><button onclick="showPage(5)">Further Reading</button></li>
       <li><button onclick="showPage(6)">Visual Library</button></li>
       <li><button onclick="showPage(7)">Character Pipeline Activity</button></li>
-      <!--
-        ADD NEW SECTION NAV LINK:
-        <li><button onclick="showPage(8)">New Section</button></li>
-        (index must match position of the new .page div below)
-      -->
     </ul>
   </nav>
 
-  <!-- ============================================================
-       CONTENT AREA — all pages live here, one visible at a time
-       ============================================================ -->
   <div id="content">
 
-    <!-- ============================================================
-         PAGE 0: HOW TO USE / DRAMATURG'S NOTE
-         ============================================================ -->
+    <!-- PAGE 0: HOW TO USE -->
     <div class="page" id="page-0">
       <div class="page-eyebrow">
         <span class="page-num">01</span>
@@ -639,16 +613,16 @@
       <h2 class="page-heading">Dramaturg's Note</h2>
 
       <div class="placeholder">
-        <span class="ph-label">✦ Dramaturg's Note</span>
-      <p>Contact: alyssa.barrack@ucf.edu</p>
+        <span class="ph-label">Dramaturg's Note</span>
+        <p>Contact: alyssa.barrack@ucf.edu</p>
         <p>Available for individual meetings as requested.</p>
         <p>Hello everyone! We are Alyssa and Sam, your dramaturgy team for this production. We look forward to digging into this rich, intense, and timely show with you all this summer.</p>
         <p>Our approach to this play involved figuring out how to give everyone easy, accessible entry ways into some of the many big themes of this text. The packet has sections that dive into thematic anchors in the play, big questions the play asks of us and our audience, and character-focused materials to help us build out the world and understand the people we are portraying. Our goal is to get us all thinking about how these ideas operate structurally and personally in the play and the world at large. I encourage you to navigate the website nonlinearly: find ideas that feel most relevant to your work, identify connections between ideas/sections, and keep a running list of questions! This is a space for curiosity and exploration, and Sam and I are available to help you find additional resources, talk through ideas, and even undergo additional research with/for you as we work together!</p>
       </div>
 
       <div class="placeholder">
-        <span class="ph-label">✦ How to Navigate This Site</span>
-       Use the sidebar to jump to specific pages, or the arrows at the bottom of each page to move through sections sequentially. The <i>Networked Topics</i> page includes an interactive graph. Clicking on a node (circle with theme title) will open a panel with notes and resources related to that topic. The <i>Character Pipeline</i> section includes a worksheet to help guide you in mapping your character's conspiracy thinking trajectory. It is optional! If you have questions about this worksheet or want to talk through it together we can find time to do that!
+        <span class="ph-label">How to Navigate This Site</span>
+        <p>Use the sidebar to jump to specific pages, or the arrows at the bottom of each page to move through sections sequentially. The <em>Networked Topics</em> page includes an interactive graph. Clicking on a node (circle with theme title) will open a panel with notes and resources related to that topic. The <em>Character Pipeline</em> section includes a worksheet to help guide you in mapping your character's conspiracy thinking trajectory. It is optional! If you have questions about this worksheet or want to talk through it together we can find time to do that!</p>
       </div>
 
       <div class="page-nav">
@@ -658,9 +632,7 @@
       </div>
     </div>
 
-    <!-- ============================================================
-         PAGE 1: INTRODUCTION / RESEARCH STARTER / AT A GLANCE
-         ============================================================ -->
+    <!-- PAGE 1: INTRODUCTION -->
     <div class="page" id="page-1">
       <div class="page-eyebrow">
         <span class="page-num">02</span>
@@ -670,17 +642,19 @@
       <h2 class="page-heading">Introduction &amp; At a Glance</h2>
 
       <div class="placeholder">
-        <span class="ph-label">✦ Research Introduction</span>
-        See the following links to articles that you should skim on your own as we begin the process! These are about the Lions Club and the Danville Raccoon Dinner they host annually. Bring your questions into rehearsal!
-        <a href="https://www.richlandsource.com/2026/02/03/a-country-delicacy-danville-lions-club-tressel-host-83rd-raccoon-dinner/
-" target="_blank" rel=noopener noreferrer>Danville Lions Club 83rd Annual Raccoon Dinner</a>
-        <a href="https://www.lionsclubs.org/en/about-us/our-organization/core-values" target="_blank" rel=noopener nofererrer>Lions Club - About the Organization</a>
-        <a href="https://e-clubhouse.org/sites/danvilleoh/index.php" target="_blank" rel=noopener noreferrer>The Danville Lions Club Website</a>
+        <span class="ph-label">Research Introduction</span>
+        <p>See the following links to articles that you should skim on your own as we begin the process! These are about the Lions Club and the Danville Raccoon Dinner they host annually. Bring your questions into rehearsal!</p>
+        <a href="https://www.richlandsource.com/2026/02/03/a-country-delicacy-danville-lions-club-tressel-host-83rd-raccoon-dinner/" target="_blank" rel="noopener noreferrer">Danville Lions Club 83rd Annual Raccoon Dinner</a>
+        <a href="https://www.lionsclubs.org/en/about-us/our-organization/core-values" target="_blank" rel="noopener noreferrer">Lions Club — About the Organization</a>
+        <a href="https://e-clubhouse.org/sites/danvilleoh/index.php" target="_blank" rel="noopener noreferrer">The Danville Lions Club Website</a>
       </div>
 
-      <!-- At-a-glance quick facts — edit the <dd> values -->
       <dl class="glance-row">
-        <div class="glance-item"><dt>Playwright</dt><dd>SMJ | <a href="https://www.smjwrites.com/small-town-icons" target="_blank" rel=noopener noreferrer>smj's website</a></dd></div>
+        <div class="glance-item">
+          <dt>Playwright</dt>
+          <dd>SMJ &middot; <a href="https://www.smjwrites.com/small-town-icons" target="_blank" rel="noopener noreferrer">smj's website</a></dd>
+        </div>
+        <!-- ADD MORE glance-item divs here as needed -->
       </dl>
 
       <div class="page-nav">
@@ -690,9 +664,7 @@
       </div>
     </div>
 
-    <!-- ============================================================
-         PAGE 2: BIG QUESTIONS AND THEMES
-         ============================================================ -->
+    <!-- PAGE 2: BIG QUESTIONS -->
     <div class="page" id="page-2">
       <div class="page-eyebrow">
         <span class="page-num">03</span>
@@ -702,11 +674,12 @@
       <h2 class="page-heading">Big Questions</h2>
 
       <div class="placeholder">
-        <span class="ph-label">✦ Framing Note</span>
-This is a list of big questions the play asks of us and our audience. We'd love to add to this list with your suggestions as we work! Let us know in an email or before/after rehearsal if you've got one to add.      </div>
+        <span class="ph-label">Framing Note</span>
+        <p>This is a list of big questions the play asks of us and our audience. We'd love to add to this list with your suggestions as we work! Let us know in an email or before/after rehearsal if you've got one to add.</p>
+      </div>
 
       <ul class="questions-list">
-        <li><span class="q-index">i.</span><span>What emotional needs to conspiracy theories meet [for our characters]?</span></li>
+        <li><span class="q-index">i.</span><span>What emotional needs do conspiracy theories meet [for our characters]?</span></li>
         <li><span class="q-index">ii.</span><span>How do conspiracy narratives feel empowering, and how are they destructive?</span></li>
         <li><span class="q-index">iii.</span><span>How do contemporary conspiracies spread through mainstream places like reddit, facebook, tiktok, instagram, etc.?</span></li>
         <li><span class="q-index">iv.</span><span>How are we, as individuals, complicit?</span></li>
@@ -720,12 +693,7 @@ This is a list of big questions the play asks of us and our audience. We'd love 
       </div>
     </div>
 
-    <!-- ============================================================
-         PAGE 3: NETWORKED TOPICS — INTERACTIVE GRAPH
-         The graph is built by D3.js. To add content to nodes,
-         edit the `nodes` array in the <script> section below.
-         Each node has: blurb, quotes[], resources[].
-         ============================================================ -->
+    <!-- PAGE 3: NETWORKED TOPICS -->
     <div class="page" id="page-3">
       <div class="page-eyebrow">
         <span class="page-num">04</span>
@@ -739,9 +707,8 @@ This is a list of big questions the play asks of us and our audience. We'd love 
         Drag to rearrange. Scroll to zoom. Darker nodes are primary anchors.
       </p>
 
-      <!-- D3 renders the SVG graph inside this div -->
       <div id="network-graph-container">
-        <div class="graph-hint">click a node to open</div>
+        <div class="graph-hint">click a node to open &middot; drag to rearrange &middot; scroll to zoom</div>
       </div>
 
       <div class="page-nav">
@@ -751,9 +718,7 @@ This is a list of big questions the play asks of us and our audience. We'd love 
       </div>
     </div>
 
-    <!-- ============================================================
-         PAGE 4: RACCOON CULTURE
-         ============================================================ -->
+    <!-- PAGE 4: RACCOON CULTURE -->
     <div class="page" id="page-4">
       <div class="page-eyebrow">
         <span class="page-num">05</span>
@@ -763,38 +728,33 @@ This is a list of big questions the play asks of us and our audience. We'd love 
       <h2 class="page-heading">Raccoon Culture</h2>
 
       <div class="placeholder">
-        <span class="ph-label">✦ Framing Note</span>
-        Write your introduction to this section. Why raccoons? What cultural meanings,
-        symbolic histories, or representations feel relevant to this production?
+        <span class="ph-label">Framing Note</span>
+        <p>[Add your introduction to this section here. Why raccoons? What drew you to the cultural meanings, symbolic histories, or representations that feel relevant to this production? What do you want the company to be thinking about before they dig into the sub-topics below?]</p>
       </div>
 
-      <!-- EDIT: Each .raccoon-topic is a sub-topic.
-           Replace [Sub-topic N] and placeholder text with real content.
-           ADD MORE: duplicate a .raccoon-topic div. -->
       <div class="raccoon-topic">
-        <h4>🦝 [Sub-topic 1]</h4>
+        <h4>[Sub-topic 1]</h4>
         <div class="placeholder">
-          <span class="ph-label">✦ Placeholder</span>
-          Your notes on this aspect of raccoon culture, symbolism, or natural history.
+          <span class="ph-label">Add Content</span>
+          <p>[Your notes on this aspect of raccoon culture, symbolism, or natural history. What's the connection to the play? What should the company know or notice?]</p>
         </div>
       </div>
 
       <div class="raccoon-topic">
-        <h4>🦝 [Sub-topic 2]</h4>
+        <h4>[Sub-topic 2]</h4>
         <div class="placeholder">
-          <span class="ph-label">✦ Placeholder</span>
-          Your notes on this aspect of raccoon culture, symbolism, or natural history.
+          <span class="ph-label">Add Content</span>
+          <p>[Your notes on this aspect of raccoon culture, symbolism, or natural history.]</p>
         </div>
       </div>
 
       <div class="raccoon-topic">
-        <h4>🦝 [Sub-topic 3]</h4>
+        <h4>[Sub-topic 3]</h4>
         <div class="placeholder">
-          <span class="ph-label">✦ Placeholder</span>
-          Your notes on this aspect of raccoon culture, symbolism, or natural history.
+          <span class="ph-label">Add Content</span>
+          <p>[Your notes on this aspect of raccoon culture, symbolism, or natural history.]</p>
         </div>
       </div>
-      <!-- ADD MORE: duplicate a .raccoon-topic div above -->
 
       <div class="page-nav">
         <button class="page-nav-btn" onclick="showPage(3)">← Networked Topics</button>
@@ -803,9 +763,7 @@ This is a list of big questions the play asks of us and our audience. We'd love 
       </div>
     </div>
 
-    <!-- ============================================================
-         PAGE 5: REFERENCE DOCUMENTS / FURTHER READING
-         ============================================================ -->
+    <!-- PAGE 5: FURTHER READING -->
     <div class="page" id="page-5">
       <div class="page-eyebrow">
         <span class="page-num">06</span>
@@ -814,10 +772,11 @@ This is a list of big questions the play asks of us and our audience. We'd love 
       </div>
       <h2 class="page-heading">Reference Documents &amp; Further Reading</h2>
 
-      <!-- EDIT: Each .reference-entry is one item.
-           Change .ref-type-tag to: Book, Article, Video, Podcast, Website, etc.
-           Wrap .ref-title in <a href="..."> to add a hyperlink.
-           ADD MORE: duplicate a .reference-entry div. -->
+      <div class="placeholder" style="margin-bottom:1.5rem;">
+        <span class="ph-label">Curatorial Note</span>
+        <p>[Add a brief note here about how you've organized these references and what you'd most recommend someone start with. What's the most essential reading? What's a good entry point for someone who wants to go deeper on a specific topic?]</p>
+      </div>
+
       <div class="reference-entry">
         <span class="ref-type-tag">Book</span>
         <div>
@@ -857,9 +816,7 @@ This is a list of big questions the play asks of us and our audience. We'd love 
       </div>
     </div>
 
-    <!-- ============================================================
-         PAGE 6: VISUAL LIBRARY
-         ============================================================ -->
+    <!-- PAGE 6: VISUAL LIBRARY -->
     <div class="page" id="page-6">
       <div class="page-eyebrow">
         <span class="page-num">07</span>
@@ -869,20 +826,17 @@ This is a list of big questions the play asks of us and our audience. We'd love 
       <h2 class="page-heading">Visual Library</h2>
 
       <div class="placeholder">
-        <span class="ph-label">✦ Curatorial Note</span>
-
+        <span class="ph-label">Curatorial Note</span>
+        <p>[Add your note here about what you've gathered and why. What were you drawn to? What do you want the company to sit with visually before they come into the room? You can also embed a Google Slides presentation or Pinterest board here using an iframe if that's easier than uploading individual images.]</p>
       </div>
 
-      <!-- EDIT: Replace each .visual-slot with a real <img> tag or <iframe>.
-           Example img: <img src="images/filename.jpg" alt="description" style="width:100%;border-radius:2px;" />
-           ADD MORE: duplicate a .visual-slot div. -->
       <div class="visual-grid">
-        <div class="visual-slot"><span class="slot-icon">🖼</span>Image 1<br>replace with &lt;img&gt;</div>
-        <div class="visual-slot"><span class="slot-icon">🖼</span>Image 2<br>replace with &lt;img&gt;</div>
-        <div class="visual-slot"><span class="slot-icon">🖼</span>Image 3<br>replace with &lt;img&gt;</div>
-        <div class="visual-slot"><span class="slot-icon">🖼</span>Image 4<br>replace with &lt;img&gt;</div>
-        <div class="visual-slot"><span class="slot-icon">🖼</span>Image 5<br>replace with &lt;img&gt;</div>
-        <div class="visual-slot"><span class="slot-icon">＋</span>Add more images</div>
+        <div class="visual-slot"><span class="slot-icon">[ ]</span>Image 1<br>replace with &lt;img&gt;</div>
+        <div class="visual-slot"><span class="slot-icon">[ ]</span>Image 2<br>replace with &lt;img&gt;</div>
+        <div class="visual-slot"><span class="slot-icon">[ ]</span>Image 3<br>replace with &lt;img&gt;</div>
+        <div class="visual-slot"><span class="slot-icon">[ ]</span>Image 4<br>replace with &lt;img&gt;</div>
+        <div class="visual-slot"><span class="slot-icon">[ ]</span>Image 5<br>replace with &lt;img&gt;</div>
+        <div class="visual-slot"><span class="slot-icon">+</span>Add more images</div>
       </div>
 
       <div class="page-nav">
@@ -892,9 +846,7 @@ This is a list of big questions the play asks of us and our audience. We'd love 
       </div>
     </div>
 
-    <!-- ============================================================
-         PAGE 7: CHARACTER PIPELINE ACTIVITY
-         ============================================================ -->
+    <!-- PAGE 7: CHARACTER PIPELINE -->
     <div class="page" id="page-7">
       <div class="page-eyebrow">
         <span class="page-num">08</span>
@@ -903,7 +855,6 @@ This is a list of big questions the play asks of us and our audience. We'd love 
       </div>
       <h2 class="page-heading">Character Pipeline Activity</h2>
 
-      <!-- PLACEHOLDER: Edit the activity instructions below -->
       <p class="activity-intro">
         This activity is meant to help you trace how your character may have moved through
         the radicalization cycle — the back-and-forth process of normalization,
@@ -911,7 +862,6 @@ This is a list of big questions the play asks of us and our audience. We'd love 
         There are no right answers.
       </p>
 
-      <!-- ---- PIPELINE MODEL: cycle diagram + stage descriptions ---- -->
       <div class="pipeline-layout">
 
         <!-- Left: SVG cycle diagram -->
@@ -920,38 +870,25 @@ This is a list of big questions the play asks of us and our audience. We'd love 
           <div class="cycle-diagram-wrap">
             <svg class="cycle-diagram" viewBox="0 0 300 270" xmlns="http://www.w3.org/2000/svg"
                  aria-label="Radicalization cycle: Normalization, Acclimation, Dehumanization">
-
-              <!-- Connecting arcs (solid — primary direction) -->
-              <path d="M 92 65 Q 150 28 208 65"   fill="none" stroke="#c8beae" stroke-width="1.5" marker-end="url(#arr)"/>
+              <path d="M 92 65 Q 150 28 208 65"    fill="none" stroke="#c8beae" stroke-width="1.5" marker-end="url(#arr)"/>
               <path d="M 234 102 Q 256 158 218 202" fill="none" stroke="#c8beae" stroke-width="1.5" marker-end="url(#arr)"/>
-              <path d="M 92 206 Q 48 158 74 106"   fill="none" stroke="#c8beae" stroke-width="1.5" marker-end="url(#arr)"/>
-
-              <!-- Reverse arcs (dashed — back-and-forth) -->
+              <path d="M 92 206 Q 48 158 74 106"    fill="none" stroke="#c8beae" stroke-width="1.5" marker-end="url(#arr)"/>
               <path d="M 198 74 Q 150 40 102 74"    fill="none" stroke="#c8beae" stroke-width="0.8" stroke-dasharray="4 3" marker-end="url(#arr-light)"/>
               <path d="M 212 194 Q 250 148 238 110" fill="none" stroke="#c8beae" stroke-width="0.8" stroke-dasharray="4 3" marker-end="url(#arr-light)"/>
-              <path d="M 80 112 Q 52 160 82 198"   fill="none" stroke="#c8beae" stroke-width="0.8" stroke-dasharray="4 3" marker-end="url(#arr-light)"/>
-
+              <path d="M 80 112 Q 52 160 82 198"    fill="none" stroke="#c8beae" stroke-width="0.8" stroke-dasharray="4 3" marker-end="url(#arr-light)"/>
               <defs>
                 <marker id="arr"       markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#8a9e7a"/></marker>
                 <marker id="arr-light" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#c8beae"/></marker>
               </defs>
-
-              <!-- Normalization node — top left, soil/dark -->
               <circle cx="82"  cy="84"  r="44" fill="#2e2318" stroke="#f2ece0" stroke-width="2"/>
               <text x="82"  y="78"  text-anchor="middle" fill="#f2ece0" font-family="'Lora',serif" font-size="10" font-style="italic">Normali-</text>
               <text x="82"  y="93"  text-anchor="middle" fill="#f2ece0" font-family="'Lora',serif" font-size="10" font-style="italic">zation</text>
-
-              <!-- Acclimation node — top right, moss/green -->
               <circle cx="220" cy="84"  r="44" fill="#4a6741" stroke="#f2ece0" stroke-width="2"/>
               <text x="220" y="78"  text-anchor="middle" fill="#f2ece0" font-family="'Lora',serif" font-size="10" font-style="italic">Acclim-</text>
               <text x="220" y="93"  text-anchor="middle" fill="#f2ece0" font-family="'Lora',serif" font-size="10" font-style="italic">ation</text>
-
-              <!-- Dehumanization node — bottom center, clay/terracotta -->
               <circle cx="150" cy="202" r="44" fill="#9e6a47" stroke="#f2ece0" stroke-width="2"/>
               <text x="150" y="196" text-anchor="middle" fill="#f2ece0" font-family="'Lora',serif" font-size="9.5" font-style="italic">Dehuman-</text>
               <text x="150" y="211" text-anchor="middle" fill="#f2ece0" font-family="'Lora',serif" font-size="9.5" font-style="italic">ization</text>
-
-              <!-- Center label -->
               <text x="150" y="144" text-anchor="middle" fill="#8a9e7a" font-family="'Lora',serif" font-size="8" letter-spacing="0.08em">back &amp; forth</text>
             </svg>
           </div>
@@ -967,7 +904,7 @@ This is a list of big questions the play asks of us and our audience. We'd love 
             </div>
             <p>Extreme ideas, rhetoric, or behaviors are made to seem ordinary or inevitable.
                Repeated exposure to a fringe idea until it no longer registers as alarming. This may look like repetition of images or text online, ideas repeated by friends or colleagues, memes and humor, and more.</p>
-            <div class="placeholder" style="margin-top:0.6rem; max-width:100%;">
+            <div class="placeholder">
               <span class="ph-label">Question</span>
               How does normalization function in this play — which ideas, through what mechanisms, for whom?
             </div>
@@ -978,11 +915,11 @@ This is a list of big questions the play asks of us and our audience. We'd love 
               <span class="stage-swatch" style="background:var(--moss);"></span>
               <h4>Acclimation</h4>
             </div>
-            <p>Normalization is passive/exposure to ideas, but acclimation is an active settling into these ideas. 
+            <p>Normalization is passive exposure to ideas, but acclimation is an active settling into these ideas.
                In this phase, a character begins to orient their identity and relationships around the normalized idea.
-              They have accepted the idea as normal and are trying it on in their own speech, behaviors, posts, etc.
-              This phase allows someone to become more comfortable with fringe ideas post-normalization.</p>
-            <div class="placeholder" style="margin-top:0.6rem; max-width:100%;">
+               They have accepted the idea as normal and are trying it on in their own speech, behaviors, posts, etc.
+               This phase allows someone to become more comfortable with fringe ideas post-normalization.</p>
+            <div class="placeholder">
               <span class="ph-label">Question</span>
               What does it look like when a character settles into a worldview? What do they gain, give up?
             </div>
@@ -993,12 +930,11 @@ This is a list of big questions the play asks of us and our audience. We'd love 
               <span class="stage-swatch" style="background:var(--clay);"></span>
               <h4>Dehumanization</h4>
             </div>
-            <p>Once a person has acclimated to fringe ideas, they can move towards dehumanization, or no longer thinking of "others" outside of their fringe belief as fellow humans worthy of respect, acknowledgement, or even rights/life.
-             This is the last spot in the triad presented in this model, but also the most likely to cause backtracking in this cyclical type of model. 
-              It can be difficult to buy into dehumanization if acclimation is not fully and thoroughly complete. 
-              That being said, once a character has dehumanized a target (or themselves), that act makes the next round of normalization easier.
-              </p>
-            <div class="placeholder" style="margin-top:0.6rem; max-width:100%;">
+            <p>Once a person has acclimated to fringe ideas, they can move towards dehumanization — no longer thinking of "others" outside of their fringe belief as fellow humans worthy of respect, acknowledgement, or even rights.
+               This is the last spot in the triad, but also the most likely to cause backtracking in this cyclical model.
+               It can be difficult to buy into dehumanization if acclimation is not fully complete.
+               That said, once a character has dehumanized a target (or themselves), that act makes the next round of normalization easier.</p>
+            <div class="placeholder">
               <span class="ph-label">Question</span>
               How does dehumanization manifest in this play — language, action, relationships?
             </div>
@@ -1007,47 +943,41 @@ This is a list of big questions the play asks of us and our audience. We'd love 
           <div class="stage-desc" style="border-left-color:var(--fog);">
             <div class="stage-desc-header">
               <span class="stage-swatch" style="background:var(--fog);"></span>
-              <h4>Cycle</h4>
+              <h4>The Cycle</h4>
             </div>
             <p>These stages feed each other recursively. Each cycle of normalization makes acclimation faster;
                each act of dehumanization becomes the new baseline to normalize.</p>
-            <div class="placeholder" style="margin-top:0.6rem; max-width:100%;">
+            <div class="placeholder">
               <span class="ph-label">Question</span>
-              Does/How does this recursive quality show up in the structure of the play itself?
+              Does/how does this recursive quality show up in the structure of the play itself?
             </div>
           </div>
 
         </div>
       </div><!-- end .pipeline-layout -->
 
-      <!-- ---- CHARACTER ENTRIES ----
-           Each .character-entry is one accordion.
-           ADD A CHARACTER: duplicate an entire .character-entry block,
-           give it a new id (char-4, etc.), update onclick to match.
-      -->
-
+      <!-- CHARACTER WORKSHEET ACCORDION -->
       <div class="character-entry" id="char-1">
         <button class="character-toggle" onclick="toggleChar('char-1')">
           <div>
             <div class="char-name-display">Worksheet</div>
-            <div class="char-role-display">FIRST: Describe your character in 1 short sentence. Try not to use the sentence on the character description in the script.</div>
+            <div class="char-role-display">First: describe your character in 1 short sentence. Try not to use the sentence on the character description in the script.</div>
           </div>
           <span class="toggle-chevron">▾</span>
         </button>
         <div class="character-body">
           <div class="dramaturg-note-inline">
-            <strong>🦝 Dramaturg's Suggestion</strong>
-            Start by establishing your own hypothesis about this character's journey through the cycle. Where do you think they entered the pipeline? Think about social media, websites, interpersonal relationships, poltiics, work and home environment, etc.
+            <strong>Dramaturg's Suggestion</strong>
+            Start by establishing your own hypothesis about this character's journey through the cycle. Where do you think they entered the pipeline? Think about social media, websites, interpersonal relationships, politics, work and home environment, etc.
             What vulnerability made them susceptible? What stage are they in by the top of the play?
           </div>
           <div class="worksheet">
             <div><label class="field-label">Where do you think your character entered the cycle?</label><input class="fill-line" type="text" placeholder="Your answer..." /></div>
             <div><label class="field-label">What was your character's core grievance or unmet need?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
             <div><label class="field-label">Where in the cycle are they at the start of the play — normalization, acclimation, or dehumanization?</label><input class="fill-line" type="text" placeholder="e.g. deep in acclimation, beginning to dehumanize..." /></div>
-            <div><label class="field-label">Who or what was the most (or at least a significant) influential force pulling them through the cycle?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
+            <div><label class="field-label">Who or what was the most (or a significant) influential force pulling them through the cycle?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
             <div><label class="field-label">Is there a moment in the play where they cycle back, or where something normalized becomes strange again?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
             <div><label class="field-label">Is there anything that could interrupt the cycle for them? What would it take?</label><textarea class="fill-area" placeholder="Your answer..."></textarea></div>
-            <!-- ADD MORE QUESTIONS: duplicate a <div> block above -->
           </div>
         </div>
       </div>
@@ -1055,18 +985,18 @@ This is a list of big questions the play asks of us and our audience. We'd love 
       <!--
         ADD A NEW CHARACTER — copy this block:
 
-        <div class="character-entry" id="char-4">
-          <button class="character-toggle" onclick="toggleChar('char-4')">
+        <div class="character-entry" id="char-2">
+          <button class="character-toggle" onclick="toggleChar('char-2')">
             <div>
-              <div class="char-name-display">[Character Name 4]</div>
-              <div class="char-role-display">[Brief role description]</div>
+              <div class="char-name-display">[Character Name]</div>
+              <div class="char-role-display">[Brief description]</div>
             </div>
             <span class="toggle-chevron">▾</span>
           </button>
           <div class="character-body">
             <div class="dramaturg-note-inline">
-              <strong>🦝 Dramaturg's Suggestion</strong>
-              [Your notes.]
+              <strong>Dramaturg's Suggestion</strong>
+              [Your notes on this character's cycle journey.]
             </div>
             <div class="worksheet">
               (copy the question <div> blocks from above)
@@ -1082,45 +1012,10 @@ This is a list of big questions the play asks of us and our audience. We'd love 
       </div>
     </div><!-- end page-7 -->
 
-    <!--
-      ============================================================
-      ADD A NEW PAGE — copy this template:
-
-      <div class="page" id="page-8">
-        <div class="page-eyebrow">
-          <span class="page-num">09</span>
-          <span class="page-rule"></span>
-          <span class="page-tag">Section Tag</span>
-        </div>
-        <h2 class="page-heading">Section Heading</h2>
-        <div class="placeholder">
-          <span class="ph-label">✦ Placeholder</span>
-          Your content goes here.
-        </div>
-        <div class="page-nav">
-          <button class="page-nav-btn" onclick="showPage(7)">← Character Pipeline</button>
-          <span class="page-nav-center">9 of 9</span>
-          <button class="page-nav-btn" disabled>Next →</button>
-        </div>
-      </div>
-
-      Then add to nav:
-      <li><button onclick="showPage(8)">New Section</button></li>
-
-      And update the previous page's "Next →" button to point here:
-      showPage(8)
-      ============================================================
-    -->
-
   </div><!-- end #content -->
-
 </div><!-- end #app -->
 
-<!-- ============================================================
-     NODE DETAIL PANEL
-     Slides in from the right when a graph node is clicked.
-     Content populated dynamically by openPanel() below.
-     ============================================================ -->
+<!-- NODE DETAIL PANEL -->
 <div id="node-panel" role="dialog" aria-modal="true" aria-labelledby="panel-title">
   <div class="panel-top">
     <div class="panel-top-meta">
@@ -1141,179 +1036,218 @@ This is a list of big questions the play asks of us and our audience. We'd love 
   </div>
 </div>
 
-<!-- ============================================================
-     JAVASCRIPT
-     ============================================================ -->
 <script>
 
   // =============================================================
   // PAGE NAVIGATION
-  // showPage(index) hides all pages, shows the one at `index`,
-  // and updates the sidebar active state.
   // =============================================================
-
-  const TOTAL_PAGES = 8; // update this if you add more pages
-
   function showPage(index) {
-    // Hide all pages
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    // Show the requested page
     const target = document.getElementById('page-' + index);
-    if (target) {
-      target.classList.add('active');
-      target.scrollTop = 0; // scroll each page back to top on navigation
-    }
-    // Update nav button active states
+    if (target) { target.classList.add('active'); target.scrollTop = 0; }
     document.querySelectorAll('#nav-list button').forEach((btn, i) => {
       btn.classList.toggle('active', i === index);
     });
-    // Close node panel if open (e.g. navigating away from graph page)
     closePanel();
   }
 
-  // Show the first page on load
   showPage(0);
-
 
   // =============================================================
   // NODE DATA
-  // Edit each node's blurb, quotes, and resources to add content.
-  //
-  // FIELDS:
-  //   id        — unique key used in links array
-  //   label     — text shown on graph node (\n = line break)
-  //   anchor    — true = larger, darker anchor node
-  //   blurb     — your research notes (plain text string)
-  //   quotes    — array of { text: "...", attribution: "— Source" }
-  //   resources — array of { label: "...", url: "https://...", type: "book"|"article"|"video"|"link" }
+  // ---- BUG THAT WAS BREAKING THE SITE ----
+  // There was a missing comma between the 2nd and 3rd quotes in
+  // the "emotion" node. JavaScript requires commas between every
+  // item in an array. One missing comma = nothing works.
+  // Always check for missing commas when editing the quotes arrays!
   // =============================================================
   const nodes = [
+    // ---- ANCHOR NODE: Emotion & Psychology ----
     {
       id: "emotion", label: "Emotion &\nPsychology", anchor: true,
-      blurb: "Much of this play is not, at its core, about what people believe but rather why people believe, their motivations for buying into the things they believe. Conspiracy thinking functions as a way to stabilize uncertainty, and gives people a sense of structure and agency. While those outside of the conspiracist community might see problems with their thinking and its consequences, conspiracy thinking turns vague ambient anxiety into a concrete and targetable issue and provides a sense of identity and belonging to those who are isolated and scared. These communities show those who joing that they aren't the only ones struggling, confused, and scared, and offer them a sense of illusory control. They can see the 'truth' if they are in this group. That kind of emotional clarity can be very seductive, especially when paired with those existing feelings of instability, loneliness, or loss of control. In summary: conspiracies reduces the complexity of lived experience into something emotionally manageable for vulnerable people; they transform uncertainty into certainty, even if it is a false truth; they provide a sense of community and identity ('I know the truth when others don't').",
+      blurb: "Much of this play is not, at its core, about what people believe but rather why people believe — their motivations for buying into the things they believe. Conspiracy thinking functions as a way to stabilize uncertainty and gives people a sense of structure and agency. While those outside the conspiracist community might see problems with their thinking and its consequences, conspiracy thinking turns vague ambient anxiety into a concrete and targetable issue, and provides a sense of identity and belonging to those who are isolated and scared. These communities show those who join that they aren't the only ones struggling, confused, and scared, and offer them a sense of illusory control. They can see the 'truth' if they are in this group. That kind of emotional clarity can be very seductive, especially when paired with existing feelings of instability, loneliness, or loss of control. In summary: conspiracies reduce the complexity of lived experience into something emotionally manageable for vulnerable people; they transform uncertainty into certainty, even if it is a false truth; they provide a sense of community and identity ('I know the truth when others don't').",
       quotes: [
-        { text: "...conspiracy theories create meaning, reduce complexity and uncertainty, and emphasize human agency...", attribution: "— Butter, 'The Nature of Conspiracy Theories', 65" },
-        { text: "They 'resolve the ambiguity of complicated situations by providing a coherent account of what is going on and who is good and who is bad.'", attribution: "— Butter, 'The Nature of Conspiracy Theories', 67" }
-        { text: "Rather than attacking the fundamental assumptions of their ideology from the outset, it probably makes more sense to begin with a more low-key approach, such as enquiring after the sources of some of their statements or detailed allegations.", attribution: "— Butter, 'The Nature of Conspiracy Theories', 163" },
-        { text: "To feel love for the nation, whereby love is an investment that should be returned (you are the 'taxpayer') is also to feel injured by these others, who are 'taking' what is yours...the 'you' implicitly evokes a 'we', a group of subjects that can identify themselves with the injured nation in this performance of personal injury.", attribution: "— Ahmed, 'The Cultural Politics of Emotion', 9" },
-        { text: "Shared feelings 'not only heighten tension, they are also in tension. Emotions in their very intensity involve miscommunication, such that even when we feel we have the same feeling, we don't necessarily have the same relationship to the feeling...", attribution: "— Ahmed, 'The Cultural Politics of Emotion', 20" },
-
+        { text: "...conspiracy theories create meaning, reduce complexity and uncertainty, and emphasize human agency...", attribution: "— Butter, 'The Nature of Conspiracy Theories', p. 65" },
+        { text: "They 'resolve the ambiguity of complicated situations by providing a coherent account of what is going on and who is good and who is bad.'", attribution: "— Butter, 'The Nature of Conspiracy Theories', p. 67" },
+        { text: "Rather than attacking the fundamental assumptions of their ideology from the outset, it probably makes more sense to begin with a more low-key approach, such as enquiring after the sources of some of their statements or detailed allegations.", attribution: "— Butter, 'The Nature of Conspiracy Theories', p. 163" },
+        { text: "To feel love for the nation, whereby love is an investment that should be returned (you are the 'taxpayer') is also to feel injured by these others, who are 'taking' what is yours...the 'you' implicitly evokes a 'we', a group of subjects that can identify themselves with the injured nation in this performance of personal injury.", attribution: "— Ahmed, 'The Cultural Politics of Emotion', p. 9" },
+        { text: "Shared feelings 'not only heighten tension, they are also in tension. Emotions in their very intensity involve miscommunication, such that even when we feel we have the same feeling, we don't necessarily have the same relationship to the feeling...", attribution: "— Ahmed, 'The Cultural Politics of Emotion', p. 20" }
       ],
       resources: [
-        { label: "[Resource 1]", url: "#", type: "book" },
-        { label: "[Resource 2]", url: "#", type: "video" }
+        { label: "[Add resource — e.g. book, article, video]", url: "#", type: "link" }
       ]
     },
+
+    // ---- ANCHOR NODE: Algorithms, Interface & the Internet ----
     {
       id: "algorithms", label: "Algorithms,\nInterface &\nthe Internet", anchor: true,
-      blurb: "[PLACEHOLDER] Add your notes on Algorithms, Interface, and the Internet. How do recommendation systems, platform design, and online ecosystems shape the world of this play?",
+      blurb: "Radicalization online is driven by the design of the interfaces we interact with. On the contemporary internet, we're seeing more digital citizens using predominantly existing platforms that encourage specific types of behavior — think social media, but also tools like Canva, Google Suite, and even retail sites. Each of these platforms has 'ideal' behavioral patterns for their users, and the interfaces are structured specifically to keep you watching, clicking, and staying on their page. The easiest way to do this is to use an algorithm to gradually escalate content and give the illusion of personalized content. The algorithm does not know nor care if something is true — that's not its purpose. Computers cannot make qualitative judgements on the information or ideas they are sharing; they work based on engagement and user profiles. This structure creates a situation where users are 'shepherded' by the algorithm into increasingly extreme or emotionally charged material over time. We see this in everyone in the play, but perhaps no one more so than CB, who gets dragged further and further down an algorithmic rabbit hole into ever-more-intense conspiracies. The interface itself — infinite scrolling, autoplay, short-form video, images — makes this process easy, effortless, and feel natural. Radicalization is architectural. Ideology isn't the biggest driver here.",
       quotes: [
-        { text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" },
-        { text: "[PLACEHOLDER] Add another quote here.", attribution: "— Source, Title" }
+        { text: "The algorithms of the search engines and social media we use ensure that the results pages of our searches and the newsfeeds of our social networking profiles only feature content that confirms what we already believe.", attribution: "— Butter, 'The Nature of Conspiracy Theories', p. 130" },
+        { text: "...the internet has been a catalyst for the fragmentation of the public sphere.", attribution: "— Butter, 'The Nature of Conspiracy Theories', p. 7" },
+        { text: "...social media platforms such as Twitter and Instagram, whose specific logic imposes severe limits on length. All this has a decisive impact on the form and narrative logic of conspiracy theories.", attribution: "— Butter, 'The Nature of Conspiracy Theories', p. 123" }
       ],
       resources: [
-        { label: "[Resource 1]", url: "#", type: "link" },
-        { label: "[Resource 2]", url: "#", type: "video" }
+        { label: "Counter Hate — counthate.com", url: "https://counterhate.com/", type: "link" },
+        { label: "TikTok screenshots showing content escalation — add link or embed when ready", url: "#", type: "link" },
+        { label: "YouTube pipeline visualizations — add link when ready", url: "#", type: "video" },
+        { label: "Screen recordings of social media autoplay chains — add when ready", url: "#", type: "video" }
       ]
     },
+
+    // ---- Conspiracy Thinking ----
     {
       id: "conspiracy", label: "Conspiracy\nThinking", anchor: false,
-      blurb: "[PLACEHOLDER] Add your notes on Conspiracy Thinking. How does conspiratorial logic function? What makes it seductive? How does it appear in this play?",
-      quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
-      resources: [{ label: "[Resource 1]", url: "#", type: "book" }]
+      blurb: "Conspiracy theories operate by simplifying the world into a story or set of stories that are more easily explainable (a small group is secretly controlling the world, everything is connected, the earth is flat, etc.). This type of thinking reduces complexity for those who are overwhelmed, confused, or potentially disadvantaged — but it also requires a lot of its believers, who must constantly reinterpret reality to maintain the coherence of the 'theory'. Evidence for this type of thinking is necessarily flexible, and anything can become proof by being squished into the narrative. Conspiracy thinking is not inherently fringe! It thrives in environments where institutional trust is low and uncertainty is high. We likely all engage in some level of conspiracy thinking, even if we don't realize it.",
+      quotes: [
+        { text: "...their arguments oscillate between deep and surface interpretation.", attribution: "— Butter, 'The Nature of Conspiracy Theories', p. 42" },
+        { text: "...they can find evidence for it almost anywhere.", attribution: "— Butter, 'The Nature of Conspiracy Theories', p. 42" },
+        { text: "Anyone who questions the existence of the conspiracy is ultimately challenging the self-image of the conspiracy theorist and their membership of the group. It is normal for people to react negatively and even irrationally to such an assault on their identity, which is why it is not enough to confront conspiracy theorists with 'facts'...", attribution: "— Butter, 'The Nature of Conspiracy Theories', p. 73" }
+      ],
+      resources: [
+        { label: "Q: Into the Storm — docuseries (HBO Max)", url: "#", type: "video" },
+        { label: "QAnon infographic — add link when ready", url: "#", type: "link" },
+        { label: "YouTube 'proof' clips — add links when ready", url: "#", type: "video" },
+        { label: "String board / conspiracy visual — add when ready", url: "#", type: "link" }
+      ]
     },
+
+    // ---- Queer Studies ----
     {
       id: "queer", label: "Queer\nStudies", anchor: false,
-      blurb: "[PLACEHOLDER] Add your notes on Queer Studies. What queer theory, history, or politics are relevant to this production?",
-      quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
-      resources: [{ label: "[Resource 1]", url: "#", type: "book" }]
+      blurb: "Queerness in this play is in tension with right-wing ideology and identity. This is a real thing that conservative people in the LGBTQ+ community experience. Identity and belief can't be cleanly separated, and thus these individuals must go through some hefty identity negotiation — respectability politics, selective alignment with ideologies, internal conflict, and internalized homophobia, as well as complicity in self-oppression. Online spaces can further complicate this through algorithmic shepherding, and queer individuals have the opportunity there to both resist and be drawn to harmful ideologies. Queer identity does not imply political alignment, even if we think it maybe should.",
+      quotes: [
+        { text: "...emotions become attributes of collectives...", attribution: "— Ahmed, 'The Cultural Politics of Emotion', pp. 10–11" },
+        { text: "...the distance between their principles and their actions...", attribution: "— Norman (on Baldwin), p. 25" },
+        { text: "...they were...unable to break from the lies they were telling themselves...", attribution: "— Norman (on Baldwin), p. 24" }
+      ],
+      resources: [
+        { label: "Queer conservative YouTubers — add specific links when ready", url: "#", type: "video" },
+        { label: "Discourse on respectability politics and identity conflict — add link when ready", url: "#", type: "link" },
+        { label: "Transmedicalism and 'normal gay' rhetoric examples — add when ready", url: "#", type: "link" }
+      ]
     },
+
+    // ---- Fragmentation & Internal Conflict ----
     {
       id: "fragmentation", label: "Fragmentation &\nInternal Conflict", anchor: false,
-      blurb: "[PLACEHOLDER] Add your notes on Fragmentation and Internal Conflict. How does this manifest in the characters, communities, or movements in the play?",
-      quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
-      resources: [{ label: "[Resource 1]", url: "#", type: "link" }]
+      blurb: "In the contemporary conservative party in the United States, there is not really a single unified movement. The 'right wing' currently consists of a series of overlapping, competing, and sometimes even contradictory ideologies and communities. These groups fracture both between one another and within themselves, and that instability creates paranoia, competition, and the constant recalibration of beliefs and feelings that are necessary conditions for conspiracy thinking. This fragmentation is mirrored in the play through shifting alliances, a would-be authority (Sandy) losing grip on her 'followers' in the Lions Club, and parallel dynamics with the raccoons. Competing ideologies exist within the same space, even among followers of the same politicians.",
+      quotes: [
+        { text: "...convictions and ideologies take on their...destructive character precisely when the objective situation has deprived them of substance.", attribution: "— Adorno, 'Aspects of the New Right-Wing Extremism', p. 5" },
+        { text: "...multiple fragmentations of the public sphere...", attribution: "— Butter, 'The Nature of Conspiracy Theories', p. 133" },
+        { text: "...many important issues are no longer debated by society as a whole. Instead, subpublics have turned into echo chambers or even filter bubbles based on fundamentally contrasting assumptions, where arguments from outside can no longer penetrate or are no longer taken seriously. Needless to say, this is a serious problem for democratic societies.", attribution: "— Butter, 'The Nature of Conspiracy Theories', p. 150" }
+      ],
+      resources: [
+        { label: "Q: Into the Storm — infighting clips (HBO Max)", url: "#", type: "video" },
+        { label: "Jan. 6 testimony excerpts — add link when ready", url: "#", type: "video" },
+        { label: "Twitter/X threads showing conservative infighting — add links when ready", url: "#", type: "link" }
+      ]
     },
+
+    // ---- Humor, Memes & Tone ----
     {
       id: "humor", label: "Humor, Memes\n& Tone", anchor: false,
-      blurb: "[PLACEHOLDER] Add your notes on Humor, Memes, and Tone. How do meme culture, irony, and comedic register function politically in this play?",
-      quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
-      resources: [{ label: "[Resource 1]", url: "#", type: "video" }]
+      blurb: "Humor is an effective entry point for conspiracy thinking and right-wing politics online because comedy lowers the stakes of entry. Humor and memes allow people to engage with harmful ideas without taking responsibility for them — similar to how humor has long been discussed as a means of class collapse and subversion of authority (Bakhtin, etc.). Over time, repeated exposure to ideas through humorous material shifts what feels acceptable to the individual engaging with that material. The joke turns into an idea, which turns into a belief or ideology. Jokes also establish plausible deniability: if a joke is challenged, the joker can always backtrack on their intentions. 'It's just a joke' is a useful shield to hide real thoughts. Repetition builds familiarity with content and normalizes it. Laughter can align individuals with an in-group.",
+      quotes: [
+        { text: "Memes...form a key medium for normalization.", attribution: "— Munn, 'Alt-Right Pipeline'" },
+        { text: "The incessant repetition of a meme produces familiarity.", attribution: "— Munn, 'Alt-Right Pipeline'" },
+        { text: "...bodies are trained to laugh at the subordinated 'other'.", attribution: "— Das, 'Laughing Bodies'" },
+        { text: "In the act of laughing, even the marginal subject transposes oneself with the dominant in-group. In other words, to laugh at the 'other' as well as to laugh at the 'otherness' within oneself is to assume the position of masculine power and derive pleasure.", attribution: "— Das, 'Laughing Bodies'" }
+      ],
+      resources: [
+        { label: "Meme progression example (mild to extreme) — add when ready", url: "#", type: "link" },
+        { label: "Stand-up clips — add specific examples when ready", url: "#", type: "video" },
+        { label: "TikToks that normalize conspiracy thinking through humor — add when ready", url: "#", type: "video" },
+        { label: "SNL clips / political cartoons — add when ready", url: "#", type: "video" }
+      ]
     },
+
+    // ---- Radicalization ----
     {
       id: "radicalization", label: "Radicalization", anchor: false,
-      blurb: "[PLACEHOLDER] Add your notes on Radicalization. What models or frameworks are you drawing on? How does the cycle function in this play?",
-      quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
-      resources: [{ label: "[Resource 1]", url: "#", type: "book" }]
+      blurb: "Radicalization tends to be gradual, uneven, and relational. Online environments have made radicalization significantly easier to fall into. Content matters, of course, but more important are the aspects of community, repetition/encounters with content, and emotional reinforcement from others engaging with that content. People tend to move through stages of radicalization — normalization, acclimation, and dehumanization — and these aren't necessarily a straight line. There are backsteps, pauses, accelerations throughout the process, and many people have a hard time pinpointing precisely what radicalized them or when they went down the pipeline. The feeling of belonging to the community and existing across the spectrum on the 'pipeline' are important aspects of becoming 'radicalized'. No single distinct turning point — just accumulation over time, built through repetition and communal reinforcement. Emotion drives the process.",
+      quotes: [
+        { text: "Rather than a single dose...there are many red pills...", attribution: "— Munn, 'Alt-Right Pipeline'" },
+        { text: "Like climbers or divers, users seem to pause at key stages...", attribution: "— Munn, 'Alt-Right Pipeline'" }
+      ],
+      resources: [
+        { label: "Visual pipeline maps — add links when ready", url: "#", type: "link" },
+        { label: "YouTube / TikTok recommendation chain examples — add when ready", url: "#", type: "video" },
+        { label: "Testimonials from people who left the pipeline — add when ready", url: "#", type: "video" }
+      ]
     },
+
+    // ---- Complicity & Ethics ----
     {
       id: "complicity", label: "Complicity &\nEthics", anchor: false,
-      blurb: "[PLACEHOLDER] Add your notes on Complicity and Ethics. What ethical questions does the play raise? Who is complicit, and how does it implicate its audience?",
-      quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
-      resources: [{ label: "[Resource 1]", url: "#", type: "link" }]
+      blurb: "This play is very interested in the gray area of complicity: what we allow, what we excuse, and what we ignore in order to maintain relationships and/or avoid conflict. Harm rarely appears as a single, obvious decision in real life, but rather accumulates — much like discussed in the Radicalization topic — through small choices and moments. This might look like letting a joke or comment slide, laughing along to keep comfort, or avoiding pushing back on things. Friendship, humor, and familiarity can all act as buffers that make it easier to tolerate harmful comments and conspiracy thinking. Complicity is incremental. Social bonds can obscure harm. Humor can disguise ethical decisions in social situations. Not doing anything at all is still a choice you are making. Ask: how am I complicit? How do we justify one another's actions and ideologies through our behavior?",
+      quotes: [
+        { text: "...emotions...circulate...as sites of personal and social tension.", attribution: "— Ahmed, 'The Cultural Politics of Emotion'" }
+      ],
+      resources: [
+        { label: "Call-out vs. silence — examples and discourse, add links when ready", url: "#", type: "link" },
+        { label: "Clips of audiences laughing at uncomfortable material — add when ready", url: "#", type: "video" }
+      ]
     },
+
+    // ---- Class & Poverty ----
     {
       id: "class", label: "Class &\nPoverty", anchor: false,
-      blurb: "[PLACEHOLDER] Add your notes on Class and Poverty. How do economic precarity, class resentment, and material conditions shape the characters' trajectories?",
-      quotes: [{ text: "[PLACEHOLDER] Paste a relevant quote here.", attribution: "— Source, Title" }],
-      resources: [{ label: "[Resource 1]", url: "#", type: "book" }]
+      blurb: "Class and poverty are underlying conditions that shape everything in this play — they touch almost all the topics in this network. Class affects access, aesthetics, identity, and vulnerability to conspiracy thinking and radicalization. When authority and systems in place feel untrustworthy, inaccessible, or seem to be failing, alternative explanations, communities, and communication sources become much more appealing to those on the receiving end of those societal-level issues. Nationalism and conspiracy can both function as responses to instability — a way of reclaiming control and a sense of agency or meaning when material conditions are bad and improvement feels out of reach. Economic instability breeds vulnerability. Identity is often shaped by access and availability.",
+      quotes: [
+        { text: "...the conditions for fascist movements are still socially, if not politically, present...especially of the still prevailing tendency towards concentration of capital...", attribution: "— Adorno, 'Aspects of the New Right-Wing Extremism', p. 2" }
+      ],
+      resources: [
+        { label: "TikTok conservative lifestyle and 'fit check' videos — add links when ready", url: "#", type: "video" },
+        { label: "Conservative lifestyle influencers — add specific examples when ready", url: "#", type: "link" },
+        { label: "Additional resources in progress — check back as we continue research", url: "#", type: "link" }
+      ]
     }
   ];
 
   // =============================================================
-  // GRAPH LINKS — all confirmed connections.
-  // Add { source: "id", target: "id" } to add a new connection.
+  // GRAPH LINKS
   // =============================================================
   const links = [
-    // Anchor: Emotion and Psychology
     { source: "emotion", target: "class" },
     { source: "emotion", target: "complicity" },
     { source: "emotion", target: "fragmentation" },
     { source: "emotion", target: "humor" },
     { source: "emotion", target: "queer" },
     { source: "emotion", target: "conspiracy" },
-    // Anchor: Algorithms, Interface, and the Internet
     { source: "algorithms", target: "radicalization" },
     { source: "algorithms", target: "queer" },
     { source: "algorithms", target: "conspiracy" },
     { source: "algorithms", target: "fragmentation" },
     { source: "algorithms", target: "humor" },
     { source: "algorithms", target: "complicity" },
-    // Radicalization
     { source: "radicalization", target: "conspiracy" },
     { source: "radicalization", target: "class" },
     { source: "radicalization", target: "complicity" },
     { source: "radicalization", target: "humor" },
-    // Conspiracy
     { source: "conspiracy", target: "complicity" },
     { source: "conspiracy", target: "fragmentation" },
     { source: "conspiracy", target: "humor" },
-    // Confirmed additional connections
     { source: "queer", target: "fragmentation" },
     { source: "class", target: "complicity" }
   ];
 
   // =============================================================
   // D3 FORCE-DIRECTED GRAPH
-  // Builds after the DOM is ready. Edit color constants to
-  // tweak node appearance. Logic below generally doesn't need edits.
   // =============================================================
   (function buildGraph() {
-    // Wait until the graph container is in the DOM
     const container = document.getElementById('network-graph-container');
     const W = container.clientWidth  || 800;
     const H = container.clientHeight || 480;
 
-    const ANCHOR_FILL  = '#4a6741';   // --moss
-    const REGULAR_FILL = '#2e2318';   // --soil
-    const HOVER_FILL   = '#9e6a47';   // --clay
+    const ANCHOR_FILL  = '#4a6741';
+    const REGULAR_FILL = '#2e2318';
+    const HOVER_FILL   = '#9e6a47';
     const ANCHOR_R     = 46;
     const REGULAR_R    = 34;
 
     const svg = d3.select('#network-graph-container')
-      .append('svg')
-      .attr('width', W).attr('height', H)
-      .attr('aria-hidden', 'true');
+      .append('svg').attr('width', W).attr('height', H).attr('aria-hidden', 'true');
 
     const g = svg.append('g');
     svg.call(d3.zoom().scaleExtent([0.35, 2.8]).on('zoom', e => g.attr('transform', e.transform)));
@@ -1340,13 +1274,13 @@ This is a list of big questions the play asks of us and our audience. We'd love 
       .on('mouseout',  function(e, d) { d3.select(this).transition().duration(120).attr('fill', d.anchor ? ANCHOR_FILL : REGULAR_FILL); });
 
     node.each(function(d) {
-      const lines    = d.label.split('\n');
+      const lines = d.label.split('\n');
       const fontSize = d.anchor ? 10.5 : 9.5;
-      const lineH    = fontSize + 2.5;
-      const totalH   = lines.length * lineH;
+      const lineH = fontSize + 2.5;
+      const totalH = lines.length * lineH;
       const text = d3.select(this).append('text')
         .attr('text-anchor', 'middle').attr('fill', '#f2ece0')
-        .attr('font-family', "'Lora', Georgia, serif").attr('font-size', fontSize)
+        .attr('font-family', "'Open Sans', sans-serif").attr('font-size', fontSize)
         .attr('pointer-events', 'none');
       lines.forEach((line, i) => {
         text.append('tspan').attr('x', 0)
@@ -1370,9 +1304,8 @@ This is a list of big questions the play asks of us and our audience. We'd love 
     svg.on('click', closePanel);
   })();
 
-
   // =============================================================
-  // NODE PANEL — open, populate, close
+  // NODE PANEL
   // =============================================================
   function openPanel(d) {
     document.getElementById('panel-type-tag').textContent = d.anchor ? 'Anchor Topic' : 'Networked Topic';
@@ -1407,7 +1340,6 @@ This is a list of big questions the play asks of us and our audience. We'd love 
 
   function closePanel() { document.getElementById('node-panel').classList.remove('open'); }
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
-
 
   // =============================================================
   // CHARACTER ACCORDION
